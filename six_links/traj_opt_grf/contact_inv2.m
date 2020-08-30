@@ -105,16 +105,16 @@ for i =1:dataLen
     % check toe pos
     toe_h = end_y_pos(cur_q.');
     heel_h = heel_y_pos(cur_q.');
-    J_toe = six_J(cur_q(1),cur_q(2),cur_q(3),cur_q(4),cur_q(5),cur_q(6));
-    J_heel = six_J2(cur_q(1),cur_q(2),cur_q(3),cur_q(4),cur_q(5),cur_q(6));
+    Jtoe = J_toe(cur_q(1),cur_q(2),cur_q(3),cur_q(4),cur_q(5),cur_q(6));
+    Jheel = J_heel(cur_q(1),cur_q(2),cur_q(3),cur_q(4),cur_q(5),cur_q(6));
     
-    J.toe{1,i} = J_toe(1:2,:);
-    J.heel{1,i} = J_heel(1:2,:);
+    J.toe{1,i} = Jtoe(1:2,:);
+    J.heel{1,i} = Jheel(1:2,:);
     
     tau(:,i) = u_no_ext([cur_q;cur_dq],ddq(:,i),param);
     
-    toe_vel = J_toe*dq(:,i);
-    heel_vel = J_heel*dq(:,i);
+    toe_vel = Jtoe*dq(:,i);
+    heel_vel = Jheel*dq(:,i);
     if(toe_h<param.toe_th)
         cur_c=param.k*(param.toe_th-toe_h)^2-param.cmax*(param.toe_th-toe_h)/param.dmax*toe_vel(2);
         if(cur_c>0)

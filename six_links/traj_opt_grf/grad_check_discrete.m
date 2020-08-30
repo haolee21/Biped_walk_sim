@@ -90,6 +90,22 @@ err_ceq = ceq2-ceq1-0.5*(gradceq1+gradceq1).'*dx;
 err_c = c2-c1-0.5*(gradc1+gradc2).'*dx;
 disp(['dynCons_ceq err=',num2str(norm(err_ceq)/norm(ceq2-ceq1))]);
 disp(['dynCons_c err=',num2str(norm(err_c)/norm(c2-c1))]);
+
+
+%% test nonlinear objective
+p.loss_w.eng=0;
+p.loss_w.dyn=0;
+p.loss_w.hipLen=0;
+p.loss_w.grf=0;
+p.loss_w.yInit=1;
+p.loss_w.hipVel=1;
+[obj1,dObj1]=obj_nonlinear(x1,p);
+[obj2,dObj2]=obj_nonlinear(x2,p);
+err_obj=obj2-obj1-0.5*(dObj1+dObj2).'*dx;
+disp(['nonlinear obj err=', num2str(norm(err_obj)/norm(obj2-obj1))]);
+
+
+
 % test dynObj
 
 

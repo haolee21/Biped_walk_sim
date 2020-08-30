@@ -1,5 +1,5 @@
 function [ceq,gradceq] = dynConst_discrete(x,p)
-
+% x = gpuArray(x);
 ceq = zeros(p.numJ*(size(x,2)-2),1);
 gradceq = zeros(p.numJ*2+6,size(x,2),size(ceq,1));
 for i=1:size(x,2)-2
@@ -175,4 +175,7 @@ for i=1:size(x,2)-2
     
 end
 gradceq = reshape(gradceq,[size(x,1)*size(x,2),size(ceq,1)]);
+
+% ceq=gather(ceq);
+% gradceq=gather(gradceq);
 end

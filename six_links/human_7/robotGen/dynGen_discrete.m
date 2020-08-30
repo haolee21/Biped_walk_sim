@@ -157,7 +157,7 @@ end
 % 
 % 
 % % Jacobian at the toe
-endT  = turnRTtoMatrix(robot.A(1:1:numJ,q_t))*[end_eff(1);end_eff(2);0;1]; % end_eff is [l_foot,l_heel,l_calf], for the toe, it is [l_foot,l_heel,0] position of ankle joint
+endT  = turnRTtoMatrix(robot.A(1:1:numJ,q_t))*[end_eff(1);end_eff(2);0;1]; % end_eff is [l_foot,h_heel,l_heel], for the toe, it is [l_foot,l_heel,0] position of ankle joint
 endPos = endT(1:3,1);
 dyn.toePos = endPos;
 dyn.J_toe = sym(zeros(3,numJ));
@@ -169,7 +169,7 @@ for i=1:numJ
     
 end
 % %% this is for a special jacobian on heel, since external force also act on the heel
-endT2 = turnRTtoMatrix(robot.A(1:1:numJ,q_t))*[-end_eff(3);end_eff(2);0;1];  % heel is [0,l_heel,0] position of ankle joint
+endT2 = turnRTtoMatrix(robot.A(1:1:numJ,q_t))*[-end_eff(3);end_eff(2);0;1];  % heel is [-l_heel,h_heel,0] position of ankle joint
 endPos2 = endT2(1:3,1);
 dyn.heelPos = endPos2;
 dyn.J_heel = sym(zeros(3,numJ));

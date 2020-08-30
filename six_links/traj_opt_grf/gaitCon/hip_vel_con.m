@@ -1,3 +1,4 @@
+% hipVel at beginning and the end are the same
 function [c,gradc]=hip_vel_con(x,p)
 x1 = x(:,1);
 x2 = x(:,2);

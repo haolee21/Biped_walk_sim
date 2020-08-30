@@ -461,14 +461,7 @@ tasks{1,task_i}=@()matlabFunction(dGrf_toe_c1s,'file','grf/discrete/dGrf_toe_c1_
 dGrf_heel_c1s = diff(Grf_heel_c1,s);
 tasks{1,task_i}=@()matlabFunction(dGrf_heel_c1s,'file','grf/discrete/dGrf_heel_c1_s','vars',{q_t,qd_t,s,H,k,cmax,dmax}); task_i=task_i+1;
 
-% constraint 2: Fx^2<=us^2*Fy
 
-Grf_c2 = Fx^2-us^2*Fy^2;
-dGrf_c2F = [diff(Grf_c2,Fx);
-           diff(Grf_c2,Fy)];
-
-tasks{1,task_i}=@()matlabFunction(Grf_c2,'file','grf/discrete/Grf_c2','vars',{[Fx,Fy],us}); task_i=task_i+1;
-tasks{1,task_i}=@()matlabFunction(dGrf_c2F,'file','grf/discrete/dGrf_c2_F','vars',{[Fx,Fy],us}); task_i=task_i+1;
 
 % constraint 3: s*(ypos-H)<=0
 %               tried to replace it with
@@ -480,8 +473,8 @@ Grf_heel_c3 = s*(heel_pos_y-H);
 % Grf_toe_c3 = s-(0.5*tanh(1000*(H-toe_pos_y))+0.5);
 % Grf_heel_c3 = s-(0.5*tanh(1000*(H-heel_pos_y))+0.5);
 
-tasks{1,task_i}=@()matlabFunction(Grf_toe_c3,'file','grf/discrete/Grf_toe_c3','vars',{q_t,qd_t,s,H}); task_i=task_i+1;
-tasks{1,task_i}=@()matlabFunction(Grf_heel_c3,'file','grf/discrete/Grf_heel_c3','vars',{q_t,qd_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(Grf_toe_c3,'file','grf/discrete/Grf_toe_c3','vars',{q_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(Grf_heel_c3,'file','grf/discrete/Grf_heel_c3','vars',{q_t,s,H}); task_i=task_i+1;
 
 dGrf_toe_c3q = [diff(Grf_toe_c3,q_t(1));
               diff(Grf_toe_c3,q_t(2));
@@ -490,15 +483,7 @@ dGrf_toe_c3q = [diff(Grf_toe_c3,q_t(1));
               diff(Grf_toe_c3,q_t(5));
               diff(Grf_toe_c3,q_t(6))];
           
-dGrf_toe_c3qd = [diff(Grf_toe_c3,qd_t(1));
-               diff(Grf_toe_c3,qd_t(2));
-               diff(Grf_toe_c3,qd_t(3));
-               diff(Grf_toe_c3,qd_t(4));
-               diff(Grf_toe_c3,qd_t(5));
-               diff(Grf_toe_c3,qd_t(6))];
-           
-dGrf_toe_c3_q1 = 0.5*dGrf_toe_c3q-dGrf_toe_c3qd/sampT;
-dGrf_toe_c3_q2 = 0.5*dGrf_toe_c3q+dGrf_toe_c3qd/sampT;
+
            
 
 dGrf_heel_c3q = [diff(Grf_heel_c3,q_t(1));
@@ -508,26 +493,17 @@ dGrf_heel_c3q = [diff(Grf_heel_c3,q_t(1));
               diff(Grf_heel_c3,q_t(5));
               diff(Grf_heel_c3,q_t(6))];
           
-dGrf_heel_c3qd = [diff(Grf_heel_c3,qd_t(1));
-               diff(Grf_heel_c3,qd_t(2));
-               diff(Grf_heel_c3,qd_t(3));
-               diff(Grf_heel_c3,qd_t(4));
-               diff(Grf_heel_c3,qd_t(5));
-               diff(Grf_heel_c3,qd_t(6))];
            
-dGrf_heel_c3_q1 = 0.5*dGrf_heel_c3q-dGrf_heel_c3qd/sampT;
-dGrf_heel_c3_q2 = 0.5*dGrf_heel_c3q+dGrf_heel_c3qd/sampT;
+
               
-tasks{1,task_i}=@()matlabFunction(dGrf_toe_c3_q1,'file','grf/discrete/dGrf_toe_c3_q1','vars',{q_t,qd_t,s,H}); task_i=task_i+1;
-tasks{1,task_i}=@()matlabFunction(dGrf_toe_c3_q2,'file','grf/discrete/dGrf_toe_c3_q2','vars',{q_t,qd_t,s,H}); task_i=task_i+1;              
+tasks{1,task_i}=@()matlabFunction(dGrf_toe_c3q,'file','grf/discrete/dGrf_toe_c3_q','vars',{q_t,s,H}); task_i=task_i+1;   
 
-tasks{1,task_i}=@()matlabFunction(dGrf_heel_c3_q1,'file','grf/discrete/dGrf_heel_c3_q1','vars',{q_t,qd_t,s,H}); task_i=task_i+1;
-tasks{1,task_i}=@()matlabFunction(dGrf_heel_c3_q2,'file','grf/discrete/dGrf_heel_c3_q2','vars',{q_t,qd_t,s,H}); task_i=task_i+1; 
+tasks{1,task_i}=@()matlabFunction(dGrf_heel_c3q,'file','grf/discrete/dGrf_heel_c3_q','vars',{q_t,s,H}); task_i=task_i+1;
 
-dGrf_toe_c3_s = diff(Grf_toe_c3,s);
-dGrf_heel_c3_s = diff(Grf_heel_c3,s);
-tasks{1,task_i}=@()matlabFunction(dGrf_toe_c3_s,'file','grf/discrete/dGrf_toe_c3_s','vars',{q_t,qd_t,H}); task_i=task_i+1;
-tasks{1,task_i}=@()matlabFunction(dGrf_heel_c3_s,'file','grf/discrete/dGrf_heel_c3_s','vars',{q_t,qd_t,H}); task_i=task_i+1;
+dGrf_toe_c3s = diff(Grf_toe_c3,s);
+dGrf_heel_c3s = diff(Grf_heel_c3,s);
+tasks{1,task_i}=@()matlabFunction(dGrf_toe_c3s,'file','grf/discrete/dGrf_toe_c3_s','vars',{q_t,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(dGrf_heel_c3s,'file','grf/discrete/dGrf_heel_c3_s','vars',{q_t,H}); task_i=task_i+1;
 
 
 % constraint 4
@@ -637,6 +613,44 @@ dGrf_toe_c5_s = diff(Grf_toe_c5,s);
 dGrf_heel_c5_s = diff(Grf_heel_c5,s);
 tasks{1,task_i}=@()matlabFunction(dGrf_toe_c5_s,'file','grf/discrete/dGrf_toe_c5_s','vars',{q_t,qd_t}); task_i=task_i+1;
 tasks{1,task_i}=@()matlabFunction(dGrf_heel_c5_s,'file','grf/discrete/dGrf_heel_c5_s','vars',{q_t,qd_t}); task_i=task_i+1;
+
+% constraint 6
+% s-(0.5*(tanh(1000*(toe_th-ypos)))+0.5) =0
+% let s =1 if below ground, s=0 if above ground
+% we may need to use this constraint in the object function in order to
+% relax the constraints
+
+Grf_toe_c6 = s-0.5*(tanh(1000*(H-toe_pos_y))+0.5);
+Grf_heel_c6= s-0.5*(tanh(1000*(H-heel_pos_y))+0.5);
+
+dGrf_toe_c6q =[diff(Grf_toe_c6,q_t(1));
+               diff(Grf_toe_c6,q_t(2));
+               diff(Grf_toe_c6,q_t(3));
+               diff(Grf_toe_c6,q_t(4));
+               diff(Grf_toe_c6,q_t(5));
+               diff(Grf_toe_c6,q_t(6))];
+
+dGrf_heel_c6q=[diff(Grf_heel_c6,q_t(1));
+               diff(Grf_heel_c6,q_t(2));
+               diff(Grf_heel_c6,q_t(3));
+               diff(Grf_heel_c6,q_t(4));
+               diff(Grf_heel_c6,q_t(5));
+               diff(Grf_heel_c6,q_t(6))];
+           
+dGrf_toe_c6_q = dGrf_toe_c6q;
+dGrf_heel_c6_q = dGrf_heel_c6q;
+
+dGrf_toe_c6_s = diff(Grf_toe_c6,s);
+dGrf_heel_c6_s = diff(Grf_heel_c6,s);
+
+tasks{1,task_i}=@()matlabFunction(Grf_toe_c6,'file','grf/discrete/Grf_toe_c6','vars',{q_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(Grf_heel_c6,'file','grf/discrete/Grf_heel_c6','vars',{q_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(dGrf_toe_c6_q,'file','grf/discrete/dGrf_toe_c6_q','vars',{q_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(dGrf_heel_c6_q,'file','grf/discrete/dGrf_heel_c6_q','vars',{q_t,s,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(dGrf_toe_c6_s,'file','grf/discrete/dGrf_toe_c6_s','vars',{q_t,H}); task_i=task_i+1;
+tasks{1,task_i}=@()matlabFunction(dGrf_heel_c6_s,'file','grf/discrete/dGrf_heel_c6_s','vars',{q_t,H}); task_i=task_i+1;
+
+
 
 
 %generate hip velocity constraint
