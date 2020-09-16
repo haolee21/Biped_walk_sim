@@ -402,8 +402,8 @@ heel_pos_y = heel_pos(2);
 ks =2;
 
 
-Grf_toe_c1 = Fy-s*(k*(H-toe_pos_y)^ks -(cmax*(0.5*tanh(2*(H-toe_pos_y)/dmax)+0.5))*toe_vel_y);
-Grf_heel_c1 = Fy-s*(k*(H-heel_pos_y)^ks-(cmax*(0.5*tanh(2*(H-heel_pos_y)/dmax)+0.5))*heel_vel_y);
+Grf_toe_c1 = Fy-s*(k*(H-toe_pos_y)^ks +(cmax*(0.5*tanh(2*(H-toe_pos_y)/dmax)+0.5))*toe_vel_y); % velocity on the y direction is negative
+Grf_heel_c1 = Fy-s*(k*(H-heel_pos_y)^ks+(cmax*(0.5*tanh(2*(H-heel_pos_y)/dmax)+0.5))*heel_vel_y);
 
 tasks{1,task_i}=@()matlabFunction(Grf_toe_c1,'file','grf/discrete/Grf_toe_c1','vars',{q_t,qd_t,Fy,s,H,k,cmax,dmax}); task_i=task_i+1;
 tasks{1,task_i}=@()matlabFunction(Grf_heel_c1,'file','grf/discrete/Grf_heel_c1','vars',{q_t,qd_t,Fy,s,H,k,cmax,dmax}); task_i=task_i+1;
@@ -620,8 +620,8 @@ tasks{1,task_i}=@()matlabFunction(dGrf_heel_c5_s,'file','grf/discrete/dGrf_heel_
 % we may need to use this constraint in the object function in order to
 % relax the constraints
 
-Grf_toe_c6 = s-0.5*(tanh(1000*(H-toe_pos_y))+0.5);
-Grf_heel_c6= s-0.5*(tanh(1000*(H-heel_pos_y))+0.5);
+Grf_toe_c6 = s-0.5*tanh(1000*(H-toe_pos_y))-0.5;
+Grf_heel_c6= s-0.5*tanh(1000*(H-heel_pos_y))-0.5;
 
 dGrf_toe_c6q =[diff(Grf_toe_c6,q_t(1));
                diff(Grf_toe_c6,q_t(2));

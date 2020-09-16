@@ -21,32 +21,35 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 %% simulate parameters
 model = load(['../',modelName,'/robotGen/model']).model;
 param.numJ=6;
-param.toe_th =-model.h_heel+0.01;
+param.toe_th =-model.h_heel+0.001;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
-param.gaitT = 0.6;
+param.gaitT = 0.5;
 param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
-param.dmax =1e-2;
+param.dmax =1e-3;
 param.cmax=1500;
-param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
+param.k=model.totM*9.81/param.dmax^2/4;      %2e6;
+% param.k=2e6;
+
 param.us=0.8;
 param.ud=0.6;
 % param.init_y=-model.h_heel;
 
 param.joint_fri = 0.003;
 
-param.hip_feet_ratio = 2/0.7143;
+param.hip_feet_ratio = 4/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
+param.toeLen=param.hip_feet_ratio*model.l_foot;
 
-param.hip_vel = -param.hipLen/param.gaitT*0.001;
-param.init_y = 0;
+% param.hip_vel = -param.hipLen/param.gaitT*0.001;
+% param.init_y = 0;
 
-param.gndclear = -model.h_heel+0.02;
+param.gndclear = -model.h_heel+0.03;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [100,1,1,1,1,1];
+param.jointW = [1,1,1,1,1,1];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 param.ank_stiff=408.65;
@@ -64,19 +67,19 @@ param.max_Fx = Inf;
 param.min_Fx = Inf;
 % param.min_Fy = Inf;
 
-% param.max_hip_tau =Inf;
-% param.min_hip_tau = Inf;
-% param.max_kne_tau = Inf;
-% param.min_kne_tau =Inf;
-% param.max_ank_tau =Inf;
-% param.min_ank_tau= Inf;
-
-param.max_hip_tau =50;
-param.min_hip_tau = 50;
-param.max_kne_tau = 50;
-param.min_kne_tau =50;
-param.max_ank_tau =50;
-param.min_ank_tau= 50;
+param.max_hip_tau =Inf;
+param.min_hip_tau = Inf;
+param.max_kne_tau = Inf;
+param.min_kne_tau =Inf;
+param.max_ank_tau =Inf;
+param.min_ank_tau= Inf;
+% 
+% param.max_hip_tau =50;
+% param.min_hip_tau = 50;
+% param.max_kne_tau = 50;
+% param.min_kne_tau =50;
+% param.max_ank_tau =50;
+% param.min_ank_tau= 50;
 % weight for obj fun
 param.loss_w.eng=0.01;
 param.loss_w.dyn=0.1;
@@ -122,28 +125,28 @@ num_1 = floor(length(time)/4);
 num_2 = floor((length(time)-num_1)/2);
 num_3 = length(time)-num_1-num_2;
 % 
-% q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),linspace(qMid_2(1),qEnd(1),num_3);
-%      linspace(qStart(2),qMid_1(2),num_1),linspace(qMid_1(2),qMid_2(2),num_2),linspace(qMid_2(2),qEnd(2),num_3);
-%      linspace(qStart(3),qMid_1(3),num_1),linspace(qMid_1(3),qMid_2(3),num_2),linspace(qMid_2(3),qEnd(3),num_3);
-%      linspace(qStart(4),qMid_1(4),num_1),linspace(qMid_1(4),qMid_2(4),num_2),linspace(qMid_2(4),qEnd(4),num_3);
-%      linspace(qStart(5),qMid_1(5),num_1),linspace(qMid_1(5),qMid_2(5),num_2),linspace(qMid_2(5),qEnd(5),num_3);
-%      linspace(qStart(6),qMid_1(6),num_1),linspace(qMid_1(6),qMid_2(6),num_2),linspace(qMid_2(6),qEnd(6),num_3)];
+q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),linspace(qMid_2(1),qEnd(1),num_3);
+     linspace(qStart(2),qMid_1(2),num_1),linspace(qMid_1(2),qMid_2(2),num_2),linspace(qMid_2(2),qEnd(2),num_3);
+     linspace(qStart(3),qMid_1(3),num_1),linspace(qMid_1(3),qMid_2(3),num_2),linspace(qMid_2(3),qEnd(3),num_3);
+     linspace(qStart(4),qMid_1(4),num_1),linspace(qMid_1(4),qMid_2(4),num_2),linspace(qMid_2(4),qEnd(4),num_3);
+     linspace(qStart(5),qMid_1(5),num_1),linspace(qMid_1(5),qMid_2(5),num_2),linspace(qMid_2(5),qEnd(5),num_3);
+     linspace(qStart(6),qMid_1(6),num_1),linspace(qMid_1(6),qMid_2(6),num_2),linspace(qMid_2(6),qEnd(6),num_3)];
 
-q = [linspace(qStart(1),qEnd(1),num_1+num_2+num_3);
-     linspace(qStart(2),qEnd(2),num_1+num_2+num_3);
-     linspace(qStart(3),qEnd(3),num_1+num_2+num_3);
-     linspace(qStart(4),qEnd(4),num_1+num_2+num_3);
-     linspace(qStart(5),qEnd(5),num_1+num_2+num_3);
-     linspace(qStart(6),qEnd(6),num_1+num_2+num_3)];
+% q = [linspace(qStart(1),qEnd(1),num_1+num_2+num_3);
+%      linspace(qStart(2),qEnd(2),num_1+num_2+num_3);
+%      linspace(qStart(3),qEnd(3),num_1+num_2+num_3);
+%      linspace(qStart(4),qEnd(4),num_1+num_2+num_3);
+%      linspace(qStart(5),qEnd(5),num_1+num_2+num_3);
+%      linspace(qStart(6),qEnd(6),num_1+num_2+num_3)];
 % base on the trajectory, we can generate the joint torque, external force, and slack variable
 
 u_temp = zeros(size(q,1),size(q,2)-2);
 slack_var_temp = zeros(2,length(q)-2);
 F_toe_temp = zeros(2,length(q)-2);
 F_heel_temp = zeros(2,length(q)-2);
-for i=1:size(q,2)-2
-    [u_temp(:,i),F_toe_temp(:,i),F_heel_temp(:,i), slack_var_temp(1,i),slack_var_temp(2,i)]=u_no_ext(q(:,i),q(:,i+1),q(:,i+2),param);
-end
+% for i=1:size(q,2)-2
+%     [u_temp(:,i),F_toe_temp(:,i),F_heel_temp(:,i), slack_var_temp(1,i),slack_var_temp(2,i)]=u_no_ext(q(:,i),q(:,i+1),q(:,i+2),param);
+% end
 
 % create different time axis to interp1 the u_temp, slack_var_temp
 t_ori = linspace(0,100,size(q,2));
@@ -158,6 +161,7 @@ Fext_heel = interp1(t_samp,F_heel_temp.',t_ori).';
 x0 = [q;u;Fext_toe;Fext_heel;slack_var];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
 % x0=load('x0_val').x;
+
 prob.x0 = x0;
 %% Constraints
 prob.nonlcon = @(x)discrete_nonlcon(x,param);
@@ -203,14 +207,27 @@ Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
                                           0,1,0,0,0,0;
                                           1,0,0,0,0,0];    
 %External force
+% modify x0 to have better convergence
+prob.x0(param.numJ*2+5,1)=1;
+prob.x0(param.numJ*2+6,1)=1;
 
-%Fy at start and end takes 1/2 body weight
-% Aeq(14,2*param.numJ+1:2*param.numJ+4) =[0,1,0,1];
-% beq(14,1)=model.totM/2*9.81;
-% 
-% Aeq(15,end-numS+param.numJ*2+1:end-numS+param.numJ*2+4)=[0,1,0,1];
-% beq(15,1)=model.totM/2*9.81;
 
+%initial/end contact =1
+Aeq(14:15,2*param.numJ+5:2*param.numJ+6) =[1,0;0,1];
+beq(14:15,1)=[1;1];
+
+Aeq(16:17,end-numS+param.numJ*2+5:end-numS+param.numJ*2+6)=[1,0;0,1];
+beq(16:17,1)=[1;1];
+
+%initial/end force = 1/2 body weight
+
+prob.x0(param.numJ*2+2,1)=model.totM*9.81/4;
+prob.x0(param.numJ*2+4,1)=model.totM*9.81/4;
+Aeq(18,2*param.numJ+1:2*param.numJ+4)=[0,1,0,1];
+beq(18,1)=model.totM*9.81/2;
+
+Aeq(19,end-numS+param.numJ*2+1:end-numS+param.numJ*2+4)=[0,1,0,1];
+beq(19,1)=model.totM*9.81/2;
 
 prob.Aeq = Aeq;
 prob.beq = beq;                                            
@@ -258,7 +275,7 @@ prob.ub = [179/180*pi*ones(1,size(x0,2));
            param.max_Fy*ones(1,size(x0,2));
            param.max_Fx*ones(1,size(x0,2));
            param.max_Fy*ones(1,size(x0,2));
-           1.0000000001*ones(2,size(x0,2))];
+           ones(2,size(x0,2))];
 prob.lb = [ones(1,size(x0,2))/180*pi;
            -179/180*pi*ones(1,size(x0,2));
            -75/180*pi*ones(1,size(x0,2));
@@ -272,17 +289,17 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.max_kne_tau*ones(1,size(x0,2));
            -param.min_ank_tau*ones(1,size(x0,2));
            -param.max_Fx*ones(1,size(x0,2));
-           -0.00001*ones(1,size(x0,2)); %I just add some values to make it easier to calculate, after all optimal solution should gave us zero
+           1e-10*ones(1,size(x0,2)); %I just add some values to make it easier to calculate, after all optimal solution should gave us zero
            -param.max_Fx*ones(1,size(x0,2));
-           -0.00001*ones(1,size(x0,2));
-           -0.00001*ones(2,size(x0,2))];
+           1e-10*ones(1,size(x0,2));
+           1e-10*ones(2,size(x0,2))];
 % prob.objective = @(x)objFun_d(x,param);
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =8000;
+iterTime =5000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
-    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'DiffMinChange',0);
+    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'DiffMinChange',0,'ScaleProblem',true);
 prob.options = options;
 prob.solver = 'fmincon';
 

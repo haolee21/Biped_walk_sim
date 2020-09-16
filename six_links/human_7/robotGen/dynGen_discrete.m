@@ -95,8 +95,8 @@ for i=1:numJ
         
     end
 
-%     % for discrete Lagrangian, we calculate the derivate with respect to q1, q2
-%     % for L = L(q1,q2) 
+    % for discrete Lagrangian, we calculate the derivate with respect to q1, q2
+    % for L = L(q1,q2) 
     for c=1:i %there is no point to calculate joint more than i since it will be zero (e.g., link 2's energy is not related to joint 5)
 % %         
         dLq(c,i) = diff(L,q_t(1,c));

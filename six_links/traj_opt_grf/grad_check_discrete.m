@@ -10,6 +10,7 @@ p = load('param_contact_test.mat').param;
 p.us = 0.8;
 p.gndclear =-0.03;
 p.hip_vel = 2;
+p.toeLen=0.6;
 f_toe = load('f_toe_test.mat').f_toe;
 f_heel = load('f_heel_test.mat').f_heel;
 x1 = [x(1:p.numJ,:);u;f_toe;f_heel;zeros(2,size(x,2))];
@@ -19,6 +20,21 @@ x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 % x2(p.numJ+1:end,:)=x1(p.numJ+1:end,:);
 % x2(2*p.numJ+1:end,:) = x1(2*p.numJ+1:end,:);
 
+
+%check toeLen constraint
+[ceq1,gradceq1]=toeCon(x1,p);
+[ceq2,gradceq2]=toeCon(x2,p);
+dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
+err = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx; 
+disp(['toeCon err= ',num2str(norm(err)/norm(ceq2-ceq1))]); 
+
+% check hipLen constraint
+[ceq1,gradceq1]=hipCon(x1,p);
+[ceq2,gradceq2]=hipCon(x2,p);
+dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
+err = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx; 
+disp(['hipCon err= ',num2str(norm(err)/norm(ceq2-ceq1))]); 
+% check discrete dynamic
 [c1,gradc1] =dynConst_discrete(x1,p);
 [c2,gradc2] = dynConst_discrete(x2,p);
 dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
@@ -109,11 +125,11 @@ disp(['nonlinear obj err=', num2str(norm(err_obj)/norm(obj2-obj1))]);
 % test dynObj
 
 
-[f1,dfx1]=dynObj(x1(1:p.numJ,:),p,u,f_toe,f_heel);
-[f2,dfx2]=dynObj(x2(1:p.numJ,:),p,u,f_toe,f_heel);
-dx = reshape(x2(1:p.numJ,:)-x1(1:p.numJ,:),[p.numJ*size(x1,2),1]);
-err = f2-f1-0.5*(dfx1+dfx2).'*dx;
-disp(['dynObj err=',num2str(norm(err)/norm(f2-f1))]);
+% [f1,dfx1]=dynObj(x1(1:p.numJ,:),p,u,f_toe,f_heel);
+% [f2,dfx2]=dynObj(x2(1:p.numJ,:),p,u,f_toe,f_heel);
+% dx = reshape(x2(1:p.numJ,:)-x1(1:p.numJ,:),[p.numJ*size(x1,2),1]);
+% err = f2-f1-0.5*(dfx1+dfx2).'*dx;
+% disp(['dynObj err=',num2str(norm(err)/norm(f2-f1))]);
 
 
 
