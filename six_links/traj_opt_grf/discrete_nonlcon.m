@@ -16,6 +16,6 @@ c = [c1;c2];
 gradc=[gradc1,gradc2];
 % ceq = [ceq1;ceq2;ceq3;ceq4;ceq5];
 % gradceq = [gradceq1,gradceq2,gradceq3,gradceq4,gradceq5];
-ceq=[ceq1;100*ceq2;ceq3/100;ceq4];
-gradceq=[gradceq1,100*gradceq2,gradceq3/100,gradceq4];
+ceq=[ceq1;ceq2;ceq3;ceq4];
+gradceq=[gradceq1,gradceq2,gradceq3,gradceq4];
 end

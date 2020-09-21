@@ -21,7 +21,7 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 %% simulate parameters
 model = load(['../',modelName,'/robotGen/model']).model;
 param.numJ=6;
-param.toe_th =-model.h_heel+0.01;
+param.toe_th =-model.h_heel+0.001;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
 param.gaitT = 0.5;
@@ -29,7 +29,7 @@ param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
-param.dmax =1e-2;
+param.dmax =1e-3;
 param.cmax=500;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 % param.k=2e6;
@@ -47,7 +47,7 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 % param.hip_vel = -param.hipLen/param.gaitT*0.001;
 % param.init_y = 0;
 
-param.gndclear = -model.h_heel+0.01;
+param.gndclear = -model.h_heel+0.03;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
 param.jointW = [1,1,1,1,1,1];
 
@@ -175,20 +175,20 @@ numS = param.numJ*2+4+2;
 Aeq = zeros(numCond,size(x0,1)*size(x0,2)); 
 beq = zeros(numCond,1);
 Aeq(1:7,1:param.numJ)=[0,0,0,0,0,1;   %start frame 
-                       0,0,0,0,1,0;
-                       0,0,0,1,0,0;
-                       0,0,1,0,0,0;
-                       0,1,0,0,0,0;
-                       1,0,0,0,0,0;
-                       1,1,1,1,1,1];
+                                  0,0,0,0,1,0;
+                                  0,0,0,1,0,0;
+                                  0,0,1,0,0,0;
+                                  0,1,0,0,0,0;
+                                  1,0,0,0,0,0;
+                                  1,1,1,1,1,1];
 
 % endframe
 Aeq(1:6,end-numS+1:end-numS+param.numJ) = [1,0,0,0,0,0; 
-                                           0,1,0,0,0,0;
-                                           0,0,1,0,0,0;
-                                           0,0,0,1,0,0;
-                                           0,0,0,0,1,0;
-                                           0,0,0,0,0,1];
+                                                    0,1,0,0,0,0;
+                                                    0,0,1,0,0,0;
+                                                    0,0,0,1,0,0;
+                                                    0,0,0,0,1,0;
+                                                    0,0,0,0,0,1];
 beq(1:7,:) = [0;0;-pi;-pi;0;0;-pi];
 %toeque
 Aeq(8:13,param.numJ+1:param.numJ*2) = [1,0,0,0,0,0;
@@ -209,7 +209,7 @@ Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
 prob.x0(param.numJ*2+5,1)=1;
 prob.x0(param.numJ*2+6,1)=1;
 prob.x0(param.numJ*2+5,end)=1;
-prob.x0(param.numJ*2+6,end)=1;
+prob.x0(param.numJ*2+6,end
 
 
 %initial/end contact =1
@@ -223,10 +223,6 @@ beq(16:17,1)=[1;1];
 
 prob.x0(param.numJ*2+2,1)=model.totM*9.81/4;
 prob.x0(param.numJ*2+4,1)=model.totM*9.81/4;
-prob.x0(param.numJ*2+2,end)=model.totM*9.81/4;
-prob.x0(param.numJ*2+4,end)=model.totM*9.81/4;
-
-
 Aeq(18,2*param.numJ+1:2*param.numJ+4)=[0,1,0,1];
 beq(18,1)=model.totM*9.81/2;
 
