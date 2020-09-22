@@ -1,4 +1,4 @@
-%% Calculate the optimized trajectories for 5 link biped model with GRF
+%% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
 clear;
 modelName='human_7';
@@ -25,7 +25,7 @@ param.toe_th =-model.h_heel+0.01;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
 param.gaitT = 0.5;
-param.sampT = 0.01;
+param.sampT = 0.005;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
@@ -49,7 +49,7 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 
 param.gndclear = -model.h_heel+0.01;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [1,1,1,1,1,1];
+param.jointW = [10,10,10,10,10,10];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 param.ank_stiff=408.65;
@@ -79,12 +79,12 @@ param.min_ank_tau= 50;
 % param.max_ank_tau =50;
 % param.min_ank_tau= 50;
 % weight for obj fun
-param.loss_w.eng=0.01;
-param.loss_w.dyn=0.1;
-param.loss_w.hipLen=1e13;
-param.loss_w.grf=1e3;
-param.loss_w.yInit=1e13;
-param.loss_w.hipVel=1e13;
+param.loss_w.eng=1;
+% param.loss_w.dyn=0.1;
+% param.loss_w.hipLen=1e13;
+% param.loss_w.grf=1e3;
+% param.loss_w.yInit=1e13;
+% param.loss_w.hipVel=1e13;
 
 %% Initial conditions
 q1 =75;
@@ -159,8 +159,9 @@ Fext_heel = interp1(t_samp,F_heel_temp.',t_ori).';
 x0 = [q;u;Fext_toe;Fext_heel;slack_var];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
 % x0=load('x0_val').x;
-
+x0=x0(:,2:end);
 prob.x0 = x0;
+
 %% Constraints
 prob.nonlcon = @(x)discrete_nonlcon(x,param);
 % linear constraints
@@ -168,70 +169,72 @@ prob.nonlcon = @(x)discrete_nonlcon(x,param);
 % equality constraints
 % the A matrix is define in the following way:
 %     [x(0),x(1),x(2).......x(end)], one condition, one row
-numCond = 13; %start-end pos conditions, velocity conditions
+numCond = 2; %start-end pos conditions, velocity conditions
 numS = param.numJ*2+4+2;
 %start-end joint condition 
 %position
 Aeq = zeros(numCond,size(x0,1)*size(x0,2)); 
 beq = zeros(numCond,1);
-Aeq(1:7,1:param.numJ)=[0,0,0,0,0,1;   %start frame 
-                       0,0,0,0,1,0;
-                       0,0,0,1,0,0;
-                       0,0,1,0,0,0;
-                       0,1,0,0,0,0;
-                       1,0,0,0,0,0;
-                       1,1,1,1,1,1];
+% Aeq(1:7,1:param.numJ)=[0,0,0,0,0,1;   %start frame 
+%                        0,0,0,0,1,0;
+%                        0,0,0,1,0,0;
+%                        0,0,1,0,0,0;
+%                        0,1,0,0,0,0;
+%                        1,0,0,0,0,0;
+%                        1,1,1,1,1,1];
+% Aeq(1,end-numS+1:end-numS+param.numJ)=[1,1,1,1,1,1];
 
 % endframe
-Aeq(1:6,end-numS+1:end-numS+param.numJ) = [1,0,0,0,0,0; 
-                                           0,1,0,0,0,0;
-                                           0,0,1,0,0,0;
-                                           0,0,0,1,0,0;
-                                           0,0,0,0,1,0;
-                                           0,0,0,0,0,1];
-beq(1:7,:) = [0;0;-pi;-pi;0;0;-pi];
+% Aeq(1:6,end-numS+1:end-numS+param.numJ) = [1,0,0,0,0,0; 
+%                                            0,1,0,0,0,0;
+%                                            0,0,1,0,0,0;
+%                                            0,0,0,1,0,0;
+%                                            0,0,0,0,1,0;
+%                                            0,0,0,0,0,1];
+% beq(1:7,:) = [0;0;-pi;-pi;0;0;-pi];
+% beq(1,1) = -pi;
 %toeque
-Aeq(8:13,param.numJ+1:param.numJ*2) = [1,0,0,0,0,0;
-                                       0,1,0,0,0,0;
-                                       0,0,1,0,0,0;
-                                       0,0,0,1,0,0;
-                                       0,0,0,0,1,0;
-                                       0,0,0,0,0,1];
-
-Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
-                                          0,0,0,0,1,0;
-                                          0,0,0,1,0,0;
-                                          0,0,1,0,0,0;
-                                          0,1,0,0,0,0;
-                                          1,0,0,0,0,0];    
+% Aeq(8:13,param.numJ+1:param.numJ*2) = [1,0,0,0,0,0;
+%                                        0,1,0,0,0,0;
+%                                        0,0,1,0,0,0;
+%                                        0,0,0,1,0,0;
+%                                        0,0,0,0,1,0;
+%                                        0,0,0,0,0,1];
+% 
+% Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
+%                                           0,0,0,0,1,0;
+%                                           0,0,0,1,0,0;
+%                                           0,0,1,0,0,0;
+%                                           0,1,0,0,0,0;
+%                                           1,0,0,0,0,0];    
 %External force
 % modify x0 to have better convergence
-prob.x0(param.numJ*2+5,1)=1;
-prob.x0(param.numJ*2+6,1)=1;
+% prob.x0(param.numJ*2+5,1)=1;
+% prob.x0(param.numJ*2+6,1)=1;
 prob.x0(param.numJ*2+5,end)=1;
 prob.x0(param.numJ*2+6,end)=1;
 
 
 %initial/end contact =1
-Aeq(14:15,2*param.numJ+5:2*param.numJ+6) =[1,0;0,1];
-beq(14:15,1)=[1;1];
+% Aeq(14:15,2*param.numJ+5:2*param.numJ+6) =[1,0;0,1];
+% beq(14:15,1)=[1;1];
 
-Aeq(16:17,end-numS+param.numJ*2+5:end-numS+param.numJ*2+6)=[1,0;0,1];
-beq(16:17,1)=[1;1];
+Aeq(1:2,end-numS+param.numJ*2+5:end-numS+param.numJ*2+6)=[1,0;0,1];
+beq(1:2,1)=[1;1];
 
 %initial/end force = 1/2 body weight
 
-prob.x0(param.numJ*2+2,1)=model.totM*9.81/4;
-prob.x0(param.numJ*2+4,1)=model.totM*9.81/4;
+% prob.x0(param.numJ*2+2,1)=model.totM*9.81/4;
+% prob.x0(param.numJ*2+4,1)=model.totM*9.81/4;
 prob.x0(param.numJ*2+2,end)=model.totM*9.81/4;
 prob.x0(param.numJ*2+4,end)=model.totM*9.81/4;
 
 
-Aeq(18,2*param.numJ+1:2*param.numJ+4)=[0,1,0,1];
-beq(18,1)=model.totM*9.81/2;
+% Aeq(18,2*param.numJ+1:2*param.numJ+4)=[0,1,0,1];
+% beq(18,1)=model.totM*9.81/2;
 
-Aeq(19,end-numS+param.numJ*2+1:end-numS+param.numJ*2+4)=[0,1,0,1];
-beq(19,1)=model.totM*9.81/2;
+% Aeq(3,end-numS+param.numJ*2+1:end-numS+param.numJ*2+4)=[0,1,0,1];
+% beq(3,1)=model.totM*9.81/2;
 
 prob.Aeq = Aeq;
 prob.beq = beq;                                            
@@ -252,7 +255,8 @@ Asamp(3:6,param.numJ*2+1:param.numJ*2+4)=[-1,param.us,0,0;
                                            0,0,-1,param.us;
                                            0,0, 1,param.us];
 
-Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT+1));
+Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT));
+
 prob.Aineq = blkdiag(Acell{:});
 Bsamp = [-88/180*pi;
           110/180*pi;
@@ -260,7 +264,12 @@ Bsamp = [-88/180*pi;
           0;
           0;
           0];
-prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT+1),1); 
+prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT),1); 
+
+%% we make grf force constraints as inequaility constraints to relax it
+% prob.Aineq(end+1,end-numS+param.numJ*2+1:end-numS+param.numJ*2+4) = [0,-1,0,-1];
+% prob.bineq(end+1,1)=-model.totM*9.81/2;
+
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
 prob.ub = [179/180*pi*ones(1,size(x0,2));
@@ -299,7 +308,7 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -1e-10*ones(2,size(x0,2))];
 % prob.objective = @(x)objFun_d(x,param);
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =3000;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
@@ -307,7 +316,31 @@ options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime
 prob.options = options;
 prob.solver = 'fmincon';
 
+prob2=prob;
+% x=no_grf_traj(prob2.x0,param,model);
+% prob.x0(1:param.numJ*2,:) = x;
 [x,fval,exitflag,output] = fmincon(prob);
+
+%% reconstruct the x
+m = zeros(size(x,1));
+m(1,6)=-1;
+m(2,5)=-1;
+m(3,4)=-1;
+m(4,3)=-1;
+m(5,2)=-1;
+m(6,1)=-1;
+m(7,param.numJ+6)=-1;
+m(8,param.numJ+5)=-1;
+m(9,param.numJ+4)=-1;
+m(10,param.numJ+3)=-1;
+m(11,param.numJ+2)=-1;
+m(12,param.numJ+1)=-1;
+m(param.numJ*2+1:end,param.numJ*2+1:end)=eye(param.numJ);
+
+x0=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0;0;0;0;0;0;0];
+x = [x0,x];
+%%
+
 
 [t1,~]=clock;
 fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d')];

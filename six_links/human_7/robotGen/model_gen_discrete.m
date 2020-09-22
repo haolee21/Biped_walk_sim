@@ -391,7 +391,7 @@ heel_vel_y = heel_vel(2);
 toe_pos = turnRTtoMatrix(robot.A([1,2,3,4,5,6],q_t))*[l_foot,h_heel,0,1].';
 toe_pos_x = toe_pos(1);
 toe_pos_y = toe_pos(2);
-heel_pos = turnRTtoMatrix(robot.A([1,2,3,4,5,6],q_t))*[0,h_heel,0,1].'; 
+heel_pos = turnRTtoMatrix(robot.A([1,2,3,4,5,6],q_t))*[-l_heel,h_heel,0,1].'; 
 heel_pos_x = heel_pos(1);
 heel_pos_y = heel_pos(2);
 
