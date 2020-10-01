@@ -9,10 +9,10 @@ dgrf_heel_c1 = zeros(size(x,1),size(x,2),size(grf_heel_c1,1));
 
 % inequality constraint
 
-grf_toe_c3 = zeros(size(x,2),1); 
-grf_heel_c3 = zeros(size(x,2),1);
-dgrf_toe_c3 = zeros(size(x,1),size(x,2),size(x,2));
-dgrf_heel_c3 = zeros(size(x,1),size(x,2),size(x,2));
+% grf_toe_c3 = zeros(size(x,2),1); 
+% grf_heel_c3 = zeros(size(x,2),1);
+% dgrf_toe_c3 = zeros(size(x,1),size(x,2),size(x,2));
+% dgrf_heel_c3 = zeros(size(x,1),size(x,2),size(x,2));
 
 grf_toe_c6 = zeros(size(x,2),1); 
 grf_heel_c6 = zeros(size(x,2),1);
@@ -54,8 +54,8 @@ for i=1:size(x,2)-1 %we only have totT-1 constraints since all velocity is gener
     grf_toe_c1(i,1) = Grf_toe_c1(q_cur.',dq.',F_toe(2),s_toe,p.toe_th,p.k,p.cmax,p.dmax);
     grf_heel_c1(i,1)= Grf_heel_c1(q_cur.',dq.',F_heel(2),s_heel,p.toe_th,p.k,p.cmax,p.dmax);
     
-    grf_toe_c3(i,1)=Grf_toe_c3(q1.',s_toe1,p.toe_th);
-    grf_heel_c3(i,1)=Grf_heel_c3(q1.',s_heel1,p.toe_th);
+%     grf_toe_c3(i,1)=Grf_toe_c3(q1.',s_toe1,p.toe_th);
+%     grf_heel_c3(i,1)=Grf_heel_c3(q1.',s_heel1,p.toe_th);
     
     grf_toe_c6(i,1)=Grf_toe_c6(q1.',s_toe1,p.toe_th);
     grf_heel_c6(i,1) = Grf_heel_c6(q1.',s_heel1,p.toe_th);
@@ -81,10 +81,10 @@ for i=1:size(x,2)-1 %we only have totT-1 constraints since all velocity is gener
         dgrf_heel_c1(2*p.numJ+6,i+1,i)=dGrf_heel_c1_s(q_cur.',dq.',s_heel,p.toe_th,p.k,p.cmax,p.dmax)*0.5;
         
 
-        dgrf_toe_c3(1:p.numJ,i,i)=dGrf_toe_c3_q(q1.',s_toe1,p.toe_th);
-        dgrf_heel_c3(1:p.numJ,i,i)=dGrf_heel_c3_q(q1.',s_toe1,p.toe_th);
-        dgrf_toe_c3(p.numJ*2+5,i,i)=dGrf_toe_c3_s(q1.',p.toe_th);
-        dgrf_heel_c3(p.numJ*2+6,i,i)=dGrf_heel_c3_s(q1.',p.toe_th);
+%         dgrf_toe_c3(1:p.numJ,i,i)=dGrf_toe_c3_q(q1.',s_toe1,p.toe_th);
+%         dgrf_heel_c3(1:p.numJ,i,i)=dGrf_heel_c3_q(q1.',s_toe1,p.toe_th);
+%         dgrf_toe_c3(p.numJ*2+5,i,i)=dGrf_toe_c3_s(q1.',p.toe_th);
+%         dgrf_heel_c3(p.numJ*2+6,i,i)=dGrf_heel_c3_s(q1.',p.toe_th);
 %         
         dgrf_toe_c6(1:p.numJ,i,i)=dGrf_toe_c6_q(q1.',s_toe1,p.toe_th);
         dgrf_toe_c6(p.numJ*2+5,i,i)=dGrf_toe_c6_s(q1.',p.toe_th);
@@ -129,13 +129,13 @@ s_toe1 = x(p.numJ*2+5,i);
 s_heel1 = x(p.numJ*2+6,i);
 
 
-grf_toe_c3(i,1)=Grf_toe_c3(q2.',s_toe1,p.toe_th);
-grf_heel_c3(i,1)=Grf_heel_c3(q2.',s_heel1,p.toe_th);
+% grf_toe_c3(i,1)=Grf_toe_c3(q2.',s_toe1,p.toe_th);
+% grf_heel_c3(i,1)=Grf_heel_c3(q2.',s_heel1,p.toe_th);
 
-dgrf_toe_c3(1:p.numJ,i,i)=dGrf_toe_c3_q(q2.',s_toe1,p.toe_th);
-dgrf_heel_c3(1:p.numJ,i,i)=dGrf_heel_c3_q(q2.',s_toe1,p.toe_th);
-dgrf_toe_c3(p.numJ*2+5,i,i)=dGrf_toe_c3_s(q2.',p.toe_th);
-dgrf_heel_c3(p.numJ*2+6,i,i)=dGrf_heel_c3_s(q2.',p.toe_th);
+% dgrf_toe_c3(1:p.numJ,i,i)=dGrf_toe_c3_q(q2.',s_toe1,p.toe_th);
+% dgrf_heel_c3(1:p.numJ,i,i)=dGrf_heel_c3_q(q2.',s_toe1,p.toe_th);
+% dgrf_toe_c3(p.numJ*2+5,i,i)=dGrf_toe_c3_s(q2.',p.toe_th);
+% dgrf_heel_c3(p.numJ*2+6,i,i)=dGrf_heel_c3_s(q2.',p.toe_th);
 
 
 
@@ -149,13 +149,9 @@ dgrf_heel_c6(1:p.numJ,i,i)=dGrf_heel_c6_q(q2.',s_heel1,p.toe_th);
 dgrf_heel_c6(p.numJ*2+6,i,i)=dGrf_heel_c6_s(q2.',p.toe_th);
 
 
-c = [grf_toe_c3;
-     grf_heel_c3;
-     grf_toe_c4;
+c =  [grf_toe_c4;
      grf_heel_c4];
-gradc=[reshape(dgrf_toe_c3,[size(x,1)*size(x,2),size(x,2)]),...
-       reshape(dgrf_heel_c3,[size(x,1)*size(x,2),size(x,2)]),...
-       reshape(dgrf_toe_c4, [size(x,1)*size(x,2),size(x,2)-1]),...
+gradc=[reshape(dgrf_toe_c4, [size(x,1)*size(x,2),size(x,2)-1]),...
        reshape(dgrf_heel_c4,[size(x,1)*size(x,2),size(x,2)-1])];
    
 % ceq =[grf_toe_c5;

@@ -7,18 +7,21 @@ addpath 'dyn'
 x = load('x_contact_test.mat').x;
 u = load('u_contact_test.mat').u;
 p = load('param_contact_test.mat').param;
-p.us = 0.8;
-p.gndclear =-0.03;
-p.hip_vel = 2;
+s = load('s_test.mat').s;
+% p.us = 0.8;
+% p.gndclear =-0.03;
+% p.hip_vel = 2;
 p.toeLen=0.6;
 f_toe = load('f_toe_test.mat').f_toe;
 f_heel = load('f_heel_test.mat').f_heel;
-x1 = [x(1:p.numJ,:);u;f_toe;f_heel;zeros(2,size(x,2))];
+x1 = [x(1:p.numJ,:);u;f_toe;f_heel;s];
 x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 % x2 = x1+1;
-% x2(1:p.numJ,:)=x1(1:p.numJ,:);
+% x2(1:2*p.numJ+4,:)=x1(1:2*p.numJ+4,:);
 % x2(p.numJ+1:end,:)=x1(p.numJ+1:end,:);
 % x2(2*p.numJ+1:end,:) = x1(2*p.numJ+1:end,:);
+% x1(17,:)=ones(1,size(x1,2));
+% x2(17,:)=ones(1,size(x2,2));
 
 
 %check toeLen constraint

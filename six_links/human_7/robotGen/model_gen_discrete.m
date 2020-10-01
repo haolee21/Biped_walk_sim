@@ -402,8 +402,11 @@ heel_pos_y = heel_pos(2);
 ks =2;
 
 
-Grf_toe_c1 = Fy-s*(k*(H-toe_pos_y)^ks +(cmax*(0.5*tanh(2*(H-toe_pos_y)/dmax)+0.5))*toe_vel_y); % velocity on the y direction is negative
-Grf_heel_c1 = Fy-s*(k*(H-heel_pos_y)^ks+(cmax*(0.5*tanh(2*(H-heel_pos_y)/dmax)+0.5))*heel_vel_y);
+% Grf_toe_c1 = Fy-s*(k*(H-toe_pos_y)^ks +(cmax*(0.5*tanh(2*(H-toe_pos_y)/dmax)+0.5))*toe_vel_y); % velocity on the y direction is negative
+% Grf_heel_c1 = Fy-s*(k*(H-heel_pos_y)^ks+(cmax*(0.5*tanh(2*(H-heel_pos_y)/dmax)+0.5))*heel_vel_y);
+
+Grf_toe_c1 = Fy-s*(k*(H-toe_pos_y)^ks -cmax*(H-toe_pos_y)/dmax*toe_vel_y); % velocity on the y direction is negative
+Grf_heel_c1 = Fy-s*(k*(H-heel_pos_y)^ks-cmax*(H-heel_pos_y)/dmax*heel_vel_y);
 
 tasks{1,task_i}=@()matlabFunction(Grf_toe_c1,'file','grf/discrete/Grf_toe_c1','vars',{q_t,qd_t,Fy,s,H,k,cmax,dmax}); task_i=task_i+1;
 tasks{1,task_i}=@()matlabFunction(Grf_heel_c1,'file','grf/discrete/Grf_heel_c1','vars',{q_t,qd_t,Fy,s,H,k,cmax,dmax}); task_i=task_i+1;

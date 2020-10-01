@@ -3,7 +3,8 @@ function x = no_grf_traj(x0,in_p,model)
 
 % different ground clearance
 p = in_p;
-p.gndclear =-model.h_heel;
+p.gndclear =-model.h_heel+0.05;
+p.ank_stiff=0;
 %% only consider the joint angles and torque
 prob.x0=x0(1:p.numJ*2,:);
 prob.nonlcon = @(x)discrete_nonlcon_nogrf(x,p);
@@ -62,7 +63,7 @@ prob.lb = [ones(1,size(prob.x0,2))/180*pi;
     -p.max_kne_tau*ones(1,size(prob.x0,2));
     -p.min_ank_tau*ones(1,size(prob.x0,2))];
 prob.objective=@(x)obj_nogrf(x,p);
-iterTime =5000;
+iterTime =3000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
