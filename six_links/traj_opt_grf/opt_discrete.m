@@ -1,6 +1,6 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-clear;
+
 modelName='human_7';
 warning on verbose
 %add share functions
@@ -31,7 +31,7 @@ param.sampT = 0.01;
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=0;
+param.cmax=1400;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 % param.k=2e6;
 
