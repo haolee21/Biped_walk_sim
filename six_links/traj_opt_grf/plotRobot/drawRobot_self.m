@@ -1,4 +1,4 @@
-function drawRobot_self(sol,p,fig,grf_plot)
+function drawRobot_self(sol,p,fig,idx,grf_plot)
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -7,19 +7,32 @@ function drawRobot_self(sol,p,fig,grf_plot)
 %   q = [5, 1] = column vector of a single robot configuration
 %   p = parameter struct
 %
+
 if nargin <4
+    idx = 0;
+end
+if nargin <5
     grf_plot=1;
 end
+
     
-
+dq = (sol(1:p.numJ,2:end)-sol(1:p.numJ,1:end-1))/p.sampT;
+sol = (sol(:,1:end-1)+sol(:,2:end))/2;
 % Compute the points that will be used for plotting
+if idx~=0
+    sol = sol(:,idx);
+    dq = dq(:,idx);
+end
 
-%% define mass for each segments, should be input param oneday
-m_foot = 1.05;
-m_calf = 3.52;
-m_thigh = 7.77;
-m_torso = 34.66+6.07;
-m_tot = m_foot+m_calf*2+m_thigh*2+m_torso;
+
+
+%% define mass for each segments
+
+m_foot = p.model.m_foot;
+m_calf = p.model.m_calf;
+m_thigh = p.model.m_thigh;
+m_torso = p.model.m_torso;
+m_tot = p.model.totM;
 startHip = -100;
 %%
 for frame=1:size(sol,2)
@@ -48,13 +61,21 @@ for frame=1:size(sol,2)
     %plot grf
     fext_toe_loc=P6;
     Fs_toe = sol(p.numJ*2+1,frame);
-    Fn_toe = sol(p.numJ*2+2,frame);
+    if(toePos_y(sol(:,frame).')<p.toe_th)
+        Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+    else
+        Fn_toe=0;
+    end
 %     [~,~,Fn_toe,Fs_toe]=toe_grf(sol(:,frame).',p);
     
     % force act on the heel
     fext_heel_loc=P7;
-    Fs_heel = sol(p.numJ*2+3,frame);
-    Fn_heel = sol(p.numJ*2+4,frame);
+    Fs_heel = sol(p.numJ*2+2,frame);
+    if(heelPos_y(sol(:,frame).')<p.toe_th)
+        Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+    else
+        Fn_heel=0;
+    end
 %     [~,~,Fn_heel,Fs_heel]=heel_grf(sol(:,frame).',p);
         
     
