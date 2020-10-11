@@ -14,7 +14,7 @@ s = load('s_test.mat').s;
 p.toeLen=0.6;
 f_toe = load('f_toe_test.mat').f_toe;
 f_heel = load('f_heel_test.mat').f_heel;
-x1 = [x(1:p.numJ,:);u;f_toe;f_heel;s];
+x1 = [x(1:p.numJ,:);u;f_toe(1,:);f_heel(1,:)];
 x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 % x2 = x1+1;
 % x2(1:2*p.numJ+4,:)=x1(1:2*p.numJ+4,:);
@@ -25,11 +25,11 @@ x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 
 
 %check toeLen constraint
-[ceq1,gradceq1]=toeCon(x1,p);
-[ceq2,gradceq2]=toeCon(x2,p);
-dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
-err = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx; 
-disp(['toeCon err= ',num2str(norm(err)/norm(ceq2-ceq1))]); 
+% [ceq1,gradceq1]=toeCon(x1,p);
+% [ceq2,gradceq2]=toeCon(x2,p);
+% dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
+% err = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx; 
+% disp(['toeCon err= ',num2str(norm(err)/norm(ceq2-ceq1))]); 
 
 % check hipLen constraint
 [ceq1,gradceq1]=hipCon(x1,p);
@@ -52,10 +52,10 @@ disp(['dynConst err= ',num2str(norm(err)/norm(c2-c1))]);
 
 dx = reshape(x2-x1,[size(x1,1)*size(x1,2),1]);
 err1 = c2-c1-0.5*(gradc1+gradc2).'*dx;
-err2 = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx;
+%err2 = ceq2-ceq1-0.5*(gradceq1+gradceq2).'*dx;
 
 disp(['grf c err=',num2str(norm(err1)/norm(c2-c1))]);
-disp(['grf ceq err=',num2str(norm(err2)/norm(ceq2-ceq1))]);
+%disp(['grf ceq err=',num2str(norm(err2)/norm(ceq2-ceq1))]);
 
 % check start/end height constraint
 

@@ -1,6 +1,6 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-
+clear;
 modelName='human_7';
 warning on verbose
 %add share functions
@@ -23,17 +23,17 @@ model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
 model.totM=67.590; %the model total mass does not add up to 100%, so I scale here first for testing purpose, should figure out the correct way in the future
 param.numJ=6;
-param.toe_th =-model.h_heel+0.01;
+param.toe_th =-model.h_heel;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
-param.gaitT = 0.5;
+param.gaitT = 0.65;
 param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=0;
-param.k=model.totM*9.81/param.dmax^2;      %2e6;
+param.cmax=1500;
+param.k=model.totM*9.81/param.dmax^2/3;      %2e6;
 % param.k=2e6;
 
 param.us=0.8;
@@ -68,12 +68,12 @@ param.max_Fx = model.totM*9.81*5;
 param.min_Fx = model.totM*9.81*5;
 % param.min_Fy = Inf;
 
-param.max_hip_tau =800;
-param.min_hip_tau = 800;
-param.max_kne_tau = 800;
-param.min_kne_tau =800;
-param.max_ank_tau =800;
-param.min_ank_tau= 800;
+param.max_hip_tau =100;
+param.min_hip_tau = 100;
+param.max_kne_tau = 100;
+param.min_kne_tau =100;
+param.max_ank_tau =100;
+param.min_ank_tau= 100;
 % 
 % param.max_hip_tau =50;
 % param.min_hip_tau = 50;
@@ -141,7 +141,7 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
 %      linspace(qStart(6),qEnd(6),num_1+num_2+num_3)];
 % base on the trajectory, we can generate the joint torque, external force, and slack variable
 
-u_temp = zeros(size(q,1),size(q,2)-2);
+u_temp = 150*rand(size(q,1),size(q,2)-2);
 F_toe_temp = zeros(1,length(q)-2);
 F_heel_temp = zeros(1,length(q)-2);
 % for i=1:size(q,2)-2
@@ -159,58 +159,58 @@ Fext_heel = interp1(t_samp,F_heel_temp.',t_ori);
 
 x0 = [q;u;Fext_toe;Fext_heel];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
-% x0=load('x0_val').x;
-
+x0=load('x0_data1').x;
+x0 = x0(:,1:end-1);
 prob.x0 = x0;
 
 %% Constraints
-prob.nonlcon = @(x)discrete_nonlcon(x,param);
+
 % linear constraints
 
 % equality constraints
 % the A matrix is define in the following way:
 %     [x(0),x(1),x(2).......x(end)], one condition, one row
-numCond = 13; %start-end pos conditions, velocity conditions
+% numCond = 13; %start-end pos conditions, velocity conditions
 numS = param.numJ*2+2;
-%start-end joint condition 
-%position
-Aeq = zeros(numCond,size(x0,1)*size(x0,2)); 
-beq = zeros(numCond,1);
-Aeq(1:7,1:param.numJ)=[0,0,0,0,0,1;   %start frame 
-                       0,0,0,0,1,0;
-                       0,0,0,1,0,0;
-                       0,0,1,0,0,0;
-                       0,1,0,0,0,0;
-                       1,0,0,0,0,0;
-                       1,1,1,1,1,1];
-% Aeq(1,end-numS+1:end-numS+param.numJ)=[1,1,1,1,1,1];
-
-%endframe
-Aeq(1:6,end-numS+1:end-numS+param.numJ) = [1,0,0,0,0,0; 
-                                           0,1,0,0,0,0;
-                                           0,0,1,0,0,0;
-                                           0,0,0,1,0,0;
-                                           0,0,0,0,1,0;
-                                           0,0,0,0,0,1];
-beq(1:7,:) = [0;0;-pi;-pi;0;0;-pi];
-% beq(1,1) = -pi;
-%toeque
-Aeq(8:13,param.numJ+1:param.numJ*2) = [1,0,0,0,0,0;
-                                       0,1,0,0,0,0;
-                                       0,0,1,0,0,0;
-                                       0,0,0,1,0,0;
-                                       0,0,0,0,1,0;
-                                       0,0,0,0,0,1];
+% %start-end joint condition 
+% %position
+% Aeq = zeros(numCond,size(x0,1)*size(x0,2)); 
+% beq = zeros(numCond,1);
+% Aeq(1:7,1:param.numJ)=[0,0,0,0,0,1;   %start frame 
+%                        0,0,0,0,1,0;
+%                        0,0,0,1,0,0;
+%                        0,0,1,0,0,0;
+%                        0,1,0,0,0,0;
+%                        1,0,0,0,0,0;
+%                        1,1,1,1,1,1];
+% % Aeq(1,end-numS+1:end-numS+param.numJ)=[1,1,1,1,1,1];
 % 
-Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
-                                          0,0,0,0,1,0;
-                                          0,0,0,1,0,0;
-                                          0,0,1,0,0,0;
-                                          0,1,0,0,0,0;
-                                          1,0,0,0,0,0];    
+% %endframe
+% Aeq(1:6,end-numS+1:end-numS+param.numJ) = [1,0,0,0,0,0; 
+%                                            0,1,0,0,0,0;
+%                                            0,0,1,0,0,0;
+%                                            0,0,0,1,0,0;
+%                                            0,0,0,0,1,0;
+%                                            0,0,0,0,0,1];
+% beq(1:7,:) = [0;0;-pi;-pi;0;0;-pi];
+% % beq(1,1) = -pi;
+% %toeque
+% Aeq(8:13,param.numJ+1:param.numJ*2) = [1,0,0,0,0,0;
+%                                        0,1,0,0,0,0;
+%                                        0,0,1,0,0,0;
+%                                        0,0,0,1,0,0;
+%                                        0,0,0,0,1,0;
+%                                        0,0,0,0,0,1];
+% % 
+% Aeq(8:13,end-numS+1:end-numS+param.numJ)=[0,0,0,0,0,1;
+%                                           0,0,0,0,1,0;
+%                                           0,0,0,1,0,0;
+%                                           0,0,1,0,0,0;
+%                                           0,1,0,0,0,0;
+%                                           1,0,0,0,0,0];    
 
-prob.Aeq = Aeq;
-prob.beq = beq;                                            
+prob.Aeq = [];
+prob.beq = [];                                            
 
 % inequality constraints
 
@@ -225,13 +225,13 @@ Asamp(1:2,1:3) = [-1,-1,-1;
                    1, 1, 1];
 
 
-Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT)+1);
+Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT));
 
 prob.Aineq = blkdiag(Acell{:});
 Bsamp = [-90/180*pi;
           110/180*pi];
-prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)+1,1); 
-
+prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT),1); 
+prob.nonlcon = @(x)discrete_nonlcon(x,param);
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
 prob.ub = [179/180*pi*ones(1,size(x0,2));
@@ -262,40 +262,67 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.min_ank_tau*ones(1,size(x0,2));
            -param.max_Fx*ones(1,size(x0,2));
            -param.max_Fx*ones(1,size(x0,2))];
-prob.objective = @(x)objFun_d(x,param);
+% prob.objective = @(x)objFun_d(x,param);
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =1500;
+iterTime =800;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
-prob.options = options;
-prob.solver = 'fmincon';
 
-% prob2=prob;
+% options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
+
+prob.options = options;
+% prob.solver = 'patternsearch';
+prob.solver = 'fmincon';
+prob2=prob;
 % x=no_grf_traj(prob2.x0(:,2:end),param,model);
-% m = zeros(size(x,1));
-% m(1,6)=-1;
-% m(2,5)=-1;
-% m(3,4)=-1;
-% m(4,3)=-1;
-% m(5,2)=-1;
-% m(6,1)=-1;
-% m(7,param.numJ+6)=-1;
-% m(8,param.numJ+5)=-1;
-% m(9,param.numJ+4)=-1;
-% m(10,param.numJ+3)=-1;
-% m(11,param.numJ+2)=-1;
-% m(12,param.numJ+1)=-1;
+
+
+
+% create mapping for start and end frame to reduce one constraint (linear),
+% otherwise it will easily converges to infeasible.
+map_A = zeros(size(x0,1));
+map_A(1,6)=-1;
+map_A(2,5)=-1;
+map_A(3,4)=-1;
+map_A(4,3)=-1;
+map_A(5,2)=-1;
+map_A(6,1)=-1;
+map_A(7,param.numJ+6)=-1;
+map_A(8,param.numJ+5)=-1;
+map_A(9,param.numJ+4)=-1;
+map_A(10,param.numJ+3)=-1;
+map_A(11,param.numJ+2)=-1;
+map_A(12,param.numJ+1)=-1;
+map_A(13,13)=-1;
+map_A(14,14)=-1;
+param.mapA = map_A;
+mapB = [0;0;pi;pi;0;0;0;0;0;0;0;0;0;0];
+param.mapB = mapB;
+
+prob.nonlcon=@(x)discrete_nonlcon(x,param);
+
+
 % 
 % 
 % x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
 % prob.x0(1:2*param.numJ,:)=[x0_1,x];
+fval_opt=1e10;
+xopt = prob.x0;
+% for i=1:7
+% [x,fval,exitflag,output] = patternsearch(prob);
 [x,fval,exitflag,output] = fmincon(prob);
-
+if fval<fval_opt
+    xopt = x;
+end
+xnew = zeros(size(x,1),size(x,2));
+xnew(1:6,:)=x(1:6,:);
+prob.x0=xnew;
+% end
 
 %%
-
+x = [x,param.mapA*x(:,1)-param.mapB];
 
 [t1,~]=clock;
 fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d')];

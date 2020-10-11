@@ -9,10 +9,12 @@ dObj=zeros(size(x,1)*size(x,2),1);
 obj=obj+0.5*sum(p.jointW.*sum(u.^2,2).')*p.loss_w.eng;
 dObj=dObj+reshape([zeros(p.numJ,size(x,2));diag(p.jointW)*u;zeros(2,size(x,2))]*p.loss_w.eng,[size(x,1)*size(x,2),1]);
 
+
+
 %% dynamic constraint
-[ceq,gradceq]=dynConst_discrete(x,p);
-obj=obj+0.5*(ceq.'*ceq)*p.loss_w.dyn;
-dObj =dObj+ gradceq*ceq*p.loss_w.dyn;
+% [ceq,gradceq]=dynConst_discrete(x,p);
+% obj=obj+0.5*(ceq.'*ceq)*p.loss_w.dyn;
+% dObj =dObj+ gradceq*ceq*p.loss_w.dyn;
 
 %% hipLen constraint
 % [ceq,gradceq]=hipCon(x,p);

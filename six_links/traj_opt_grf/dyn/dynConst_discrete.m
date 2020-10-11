@@ -188,34 +188,34 @@ for i=1:size(x,2)-2
         
         % gradient related to Tau_toe
         if tau_toe_flag1==1
-            gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+    0.25*dTau_toe_dq1(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_toe_dq2(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+    0.5*dTau_toe_dq1(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_toe_dq2(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             % fx = (fx1+fx2)/2, the gradients of it are both dTau_toe_dfx*0.5
-            gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])    +0.25*dTau_toe_dfx(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_toe_dfx(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])    +0.5*dTau_toe_dfx(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_toe_dfx(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
         end
         if tau_toe_flag2==1
-            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_toe_dq1(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_toe_dq2(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_toe_dq1(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_toe_dq2(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             % fx = (fx1+fx2)/2, the gradients of it are both dTau_toe_dfx*0.5
-            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_toe_dfx(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_toe_dfx(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_toe_dfx(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_toe_dfx(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             
         end
         
         if tau_heel_flag1==1
-            gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_heel_dq1(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_heel_dq2(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_heel_dq1(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_heel_dq2(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             % fx = (fx1+fx2)/2, the gradients of it are both dTau_heel_dfx*0.5
-            gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_heel_dfx(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_heel_dfx(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_heel_dfx(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_heel_dfx(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
         end
         if tau_heel_flag2==1
-            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_heel_dq1(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.25*dTau_heel_dq2(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+1,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_heel_dq1(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+0.5*dTau_heel_dq2(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             % fx = (fx1+fx2)/2, the gradients of it are both dTau_heel_dfx*0.5
-            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_heel_dfx(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
-            gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_heel_dfx(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+1,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_heel_dfx(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+            gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.5*dTau_heel_dfx(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
             
         end
         
