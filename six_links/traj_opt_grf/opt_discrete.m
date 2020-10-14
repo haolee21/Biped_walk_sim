@@ -23,7 +23,7 @@ model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
 model.totM=67.590; %the model total mass does not add up to 100%, so I scale here first for testing purpose, should figure out the correct way in the future
 param.numJ=6;
-param.toe_th =-model.h_heel;
+param.toe_th =-model.h_heel+0.01;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
 param.gaitT = 0.65;
@@ -32,9 +32,12 @@ param.sampT = 0.01;
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=1500;
-param.k=model.totM*9.81/param.dmax^2/3;      %2e6;
+param.cmax=0;
+param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
 % param.k=2e6;
+
+% param.k=0;
+% param.cmax=0;
 
 param.us=0.8;
 param.ud=0.6;
@@ -84,6 +87,7 @@ param.min_ank_tau= 100;
 % weight for obj fun
 param.loss_w.eng=1;
 param.loss_w.dyn=1000;
+param.loss_w.u_diff = 0;
 % param.loss_w.hipLen=1e13;
 % param.loss_w.grf=1e3;
 % param.loss_w.yInit=1e13;
@@ -159,7 +163,7 @@ Fext_heel = interp1(t_samp,F_heel_temp.',t_ori);
 
 x0 = [q;u;Fext_toe;Fext_heel];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
-x0=load('x0_data1').x;
+% x0=load('x0_data1').x;
 x0 = x0(:,1:end-1);
 prob.x0 = x0;
 
@@ -264,7 +268,7 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.max_Fx*ones(1,size(x0,2))];
 % prob.objective = @(x)objFun_d(x,param);
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =800;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
@@ -276,9 +280,9 @@ prob.options = options;
 % prob.solver = 'patternsearch';
 prob.solver = 'fmincon';
 prob2=prob;
-% x=no_grf_traj(prob2.x0(:,2:end),param,model);
-
-
+% x=no_grf_traj(prob2.x0,param,model);
+% prob.x0(1:2*param.numJ,:)=x;
+% 
 
 % create mapping for start and end frame to reduce one constraint (linear),
 % otherwise it will easily converges to infeasible.

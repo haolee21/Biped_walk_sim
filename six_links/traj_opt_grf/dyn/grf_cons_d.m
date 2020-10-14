@@ -69,11 +69,11 @@ for i=1:size(x,2)-1 %we only have totT-1 constraints since all velocity is gener
         if(heel_flag==1)
             dgrf_heel_c2(1:p.numJ,i,i)=reshape(dgrf_heel_c2(1:p.numJ,i,i),[p.numJ,1])+dGrf_heel_c2_dq1(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
             dgrf_heel_c2(1:p.numJ,i+1,i)=reshape(dgrf_heel_c2(1:p.numJ,i+1,i),[p.numJ,1])+dGrf_heel_c2_dq2(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_heel_c2(2*p.numJ+1,i,i)=dgrf_heel_c2(2*p.numJ+1,i,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_heel_c2(2*p.numJ+1,i+1,i)=dgrf_heel_c2(2*p.numJ+1,i+1,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(2*p.numJ+2,i,i)=dgrf_heel_c2(2*p.numJ+2,i,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(2*p.numJ+2,i+1,i)=dgrf_heel_c2(2*p.numJ+2,i+1,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
         else
-            dgrf_heel_c2(2*p.numJ+1,i,i)=dgrf_heel_c2(2*p.numJ+1,i,i)+0.5;
-            dgrf_heel_c2(2*p.numJ+1,i+1,i)=dgrf_heel_c2(2*p.numJ+1,i+1,i)+0.5;
+            dgrf_heel_c2(2*p.numJ+2,i,i)=dgrf_heel_c2(2*p.numJ+2,i,i)+0.5;
+            dgrf_heel_c2(2*p.numJ+2,i+1,i)=dgrf_heel_c2(2*p.numJ+2,i+1,i)+0.5;
             
         end
         

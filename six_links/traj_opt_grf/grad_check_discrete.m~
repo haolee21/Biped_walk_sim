@@ -11,7 +11,7 @@ s = load('s_test.mat').s;
 % p.us = 0.8;
 % p.gndclear =-0.03;
 % p.hip_vel = 2;
-p.loss_w.u_diff = 10;
+p.loss_w.u_diff = 1;
 p.toeLen=0.6;
 f_toe = load('f_toe_test.mat').f_toe;
 f_heel = load('f_heel_test.mat').f_heel;
@@ -82,17 +82,17 @@ err = c2-c1-0.5*(gradc1+gradc2).'*dx;
 disp(['initYpos err=',num2str(norm(err)/norm(c2-c1))]);
 
 % check f_dyn
-% u =x1(p.numJ+1:2*p.numJ,:);
-% f_toe = x1(p.numJ*2+1:p.numJ*2+2,:);
-% f_heel= x1(p.numJ*2+3:p.numJ*2+4,:);
-% 
-% 
-% 
-% [f1,dfx1]=f_dyn(x1,p,f_toe,f_heel,u);
-% [f2,dfx2]=f_dyn(x2,p,f_toe,f_heel,u);
-% dx = reshape(x2(1:p.numJ,:)-x1(1:p.numJ,:),[p.numJ*size(x1,2),1]);
-% err = f2-f1-0.5*(dfx1+dfx2).'*dx;
-% disp(['f_dyn(dynLoss) err=',num2str(norm(err)/norm(f2-f1))]);
+u =x1(p.numJ+1:2*p.numJ,:);
+f_toe = x1(p.numJ*2+1:p.numJ*2+2,:);
+f_heel= x1(p.numJ*2+3:p.numJ*2+4,:);
+
+
+
+[f1,dfx1]=f_dyn(x1,p,f_toe,f_heel,u);
+[f2,dfx2]=f_dyn(x2,p,f_toe,f_heel,u);
+dx = reshape(x2(1:p.numJ,:)-x1(1:p.numJ,:),[p.numJ*size(x1,2),1]);
+err = f2-f1-0.5*(dfx1+dfx2).'*dx;
+disp(['f_dyn(dynLoss) err=',num2str(norm(err)/norm(f2-f1))]);
 
 
 %test hip_vel_con
@@ -113,7 +113,7 @@ disp(['dynCons_c err=',num2str(norm(err_c)/norm(c2-c1))]);
 
 
 %% test nonlinear objective
-p.loss_w.eng=0;
+% p.loss_w.eng=0;
 % p.loss_w.dyn=0;
 % p.loss_w.hipLen=0;
 % p.loss_w.grf=0;
