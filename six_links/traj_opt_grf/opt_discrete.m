@@ -8,7 +8,7 @@ addpath dyn/
 addpath obj/
 addpath gaitCon/
 addpath plotRobot/
-dbstop if error
+addpath forward_dyn
 
 addpath (['../',modelName,'/robotGen/'])
 addpath (['../',modelName,'/robotGen/grad/'])
@@ -32,7 +32,7 @@ param.sampT = 0.01;
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=0;
+param.cmax=50;
 param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
 % param.k=2e6;
 
@@ -55,7 +55,7 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 
 param.gndclear = -model.h_heel+0.02;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [1,1,10,10,1,1];
+param.jointW = [1,1,1,1,1,1];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 param.ank_stiff=408.65;
@@ -145,7 +145,7 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
 %      linspace(qStart(6),qEnd(6),num_1+num_2+num_3)];
 % base on the trajectory, we can generate the joint torque, external force, and slack variable
 
-u_temp = 150*rand(size(q,1),size(q,2)-2);
+u_temp = 100*rand(size(q,1),size(q,2)-2);
 F_toe_temp = zeros(1,length(q)-2);
 F_heel_temp = zeros(1,length(q)-2);
 % for i=1:size(q,2)-2
@@ -239,7 +239,7 @@ prob.nonlcon = @(x)discrete_nonlcon(x,param);
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
 prob.ub = [179/180*pi*ones(1,size(x0,2));
-           0*ones(1,size(x0,2))/180*pi;
+           -0.001*ones(1,size(x0,2))/180*pi;
            75/180*pi*ones(1,size(x0,2));
            -100/180*pi*ones(1,size(x0,2));
            179/180*pi*ones(1,size(x0,2));
@@ -256,7 +256,7 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -179/180*pi*ones(1,size(x0,2));
            -75/180*pi*ones(1,size(x0,2));
            -260/180*pi*ones(1,size(x0,2));
-           -0*ones(1,size(x0,2))/180*pi;
+            0.001*ones(1,size(x0,2))/180*pi;
            -120/180*pi*ones(1,size(x0,2));
            -param.max_ank_tau*ones(1,size(x0,2));
            -param.min_kne_tau*ones(1,size(x0,2));
@@ -266,9 +266,9 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.min_ank_tau*ones(1,size(x0,2));
            -param.max_Fx*ones(1,size(x0,2));
            -param.max_Fx*ones(1,size(x0,2))];
-% prob.objective = @(x)objFun_d(x,param);
+
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =8000;
+iterTime =3000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
@@ -315,15 +315,16 @@ prob.nonlcon=@(x)discrete_nonlcon(x,param);
 fval_opt=1e10;
 xopt = prob.x0;
 % for i=1:7
-% [x,fval,exitflag,output] = patternsearch(prob);
+
 [x,fval,exitflag,output] = fmincon(prob);
-if fval<fval_opt
-    xopt = x;
-end
-xnew = zeros(size(x,1),size(x,2));
-xnew(1:6,:)=x(1:6,:);
-prob.x0=xnew;
+% if fval<fval_opt
+%     xopt = x;
 % end
+% f = forward_dyn(xopt,param);
+% prob.x0 = [x(1:param.numJ,:);f];
+% end
+
+
 
 %%
 x = [x,param.mapA*x(:,1)-param.mapB];
