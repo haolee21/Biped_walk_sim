@@ -1,4 +1,4 @@
-function drawRobot_self(sol,p,fig,idx,grf_plot)
+function drawRobot_self(sol,p,idx,grf_plot)
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -8,10 +8,10 @@ function drawRobot_self(sol,p,fig,idx,grf_plot)
 %   p = parameter struct
 %
 
-if nargin <4
+if nargin <3
     idx = 0;
 end
-if nargin <5
+if nargin <4
     grf_plot=1;
 end
 
@@ -35,6 +35,7 @@ m_torso = p.model.m_torso;
 m_tot = p.model.totM;
 startHip = -100;
 %%
+fig = figure();
 for frame=1:size(sol,2)
     P = getRobotPos(sol(1,frame),sol(2,frame),sol(3,frame),sol(4,frame),sol(5,frame),sol(6,frame));
  

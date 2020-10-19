@@ -26,13 +26,13 @@ param.numJ=6;
 param.toe_th =-model.h_heel+0.01;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
-param.gaitT = 0.65;
+param.gaitT = 0.5;
 param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=50;
+param.cmax=100;
 param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
 % param.k=2e6;
 
@@ -55,7 +55,7 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 
 param.gndclear = -model.h_heel+0.02;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [1,1,1,1,1,1];
+param.jointW = [10,1,10,10,1,1];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 param.ank_stiff=408.65;
@@ -268,7 +268,7 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.max_Fx*ones(1,size(x0,2))];
 
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =3000;
+iterTime =5000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...

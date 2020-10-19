@@ -37,14 +37,17 @@ robot.gravity=[0,9.81,0];
 
 %kg
 totM = 75;
+m_hand = 0.0061*totM;
+m_upper_arm = 0.0271*totM;
+m_fore_arm = 0.0162*totM;
 m_foot = 0.0137*totM;
 m_calf =0.0433*totM;
 m_thigh = 0.1416*totM;
 m_head = 0.0694*totM;
 m_trunk = 0.4346*totM;
-m_torso = m_trunk+m_head; %this total mass is not 100% though
+m_torso = m_trunk+m_head+(m_hand+m_upper_arm+m_fore_arm)*2; %this total mass is not 100% though
 
-model.totM = totM;
+model.totM = (m_foot+m_calf+m_thigh)*2+m_torso;
 model.h_heel = h_heel;
 model.l_foot = l_foot;
 model.m_foot = m_foot;
