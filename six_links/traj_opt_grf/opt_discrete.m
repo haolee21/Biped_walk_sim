@@ -2,7 +2,7 @@
 % the dynamics constraints are discrete Lagrangian
 clear;
 modelName='human_7';
-warning on verbose
+
 %add share functions
 addpath dyn/
 addpath obj/
@@ -21,18 +21,18 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 %% simulate parameters
 model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
-model.totM=67.590; %the model total mass does not add up to 100%, so I scale here first for testing purpose, should figure out the correct way in the future
+
 param.numJ=6;
 param.toe_th =-model.h_heel+0.01;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
-param.gaitT = 0.5;
+param.gaitT = 0.55;
 param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=100;
+param.cmax=10;
 param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
 % param.k=2e6;
 
@@ -53,11 +53,12 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 % param.hip_vel = -param.hipLen/param.gaitT*0.001;
 % param.init_y = 0;
 
-param.gndclear = -model.h_heel+0.02;
+param.gndclear = -model.h_heel+0.015;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [10,1,10,10,1,1];
+param.jointW = [0.5,1,5,5,1,0.5];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+
 param.ank_stiff=408.65;
 % param.knee_stiff=0;
 % param.ank_stiff=0;
@@ -66,17 +67,17 @@ time = 0:param.sampT:param.gaitT;
 
 
 
-param.max_Fy = model.totM*9.81*5;
-param.max_Fx = model.totM*9.81*5;
-param.min_Fx = model.totM*9.81*5;
+param.max_Fy = model.totM*9.81*3;
+param.max_Fx = model.totM*9.81*3;
+param.min_Fx = model.totM*9.81*3;
 % param.min_Fy = Inf;
 
-param.max_hip_tau =100;
-param.min_hip_tau = 100;
-param.max_kne_tau = 100;
-param.min_kne_tau =100;
-param.max_ank_tau =100;
-param.min_ank_tau= 100;
+param.max_hip_tau =200;
+param.min_hip_tau = 200;
+param.max_kne_tau = 200;
+param.min_kne_tau =200;
+param.max_ank_tau =200;
+param.min_ank_tau= 200;
 % 
 % param.max_hip_tau =50;
 % param.min_hip_tau = 50;
@@ -146,6 +147,8 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
 % base on the trajectory, we can generate the joint torque, external force, and slack variable
 
 u_temp = 100*rand(size(q,1),size(q,2)-2);
+
+
 F_toe_temp = zeros(1,length(q)-2);
 F_heel_temp = zeros(1,length(q)-2);
 % for i=1:size(q,2)-2
@@ -163,9 +166,17 @@ Fext_heel = interp1(t_samp,F_heel_temp.',t_ori);
 
 x0 = [q;u;Fext_toe;Fext_heel];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
-% x0=load('x0_data1').x;
+% x0=load('x0_val').x;
 x0 = x0(:,1:end-1);
+% % if the original sampT is different from the x0_data
+% if(size(x0,2)~=param.gaitT/param.sampT)
+%     t_ori = linspace(0,100,size(x0,2));
+%     t_samp = linspace(0,100,param.gaitT/param.sampT);
+%     x0 = interp1(t_ori,x0.',t_samp).';
+% end
 prob.x0 = x0;
+
+
 
 %% Constraints
 
@@ -268,7 +279,7 @@ prob.lb = [ones(1,size(x0,2))/180*pi;
            -param.max_Fx*ones(1,size(x0,2))];
 
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =5000;
+iterTime =3000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
