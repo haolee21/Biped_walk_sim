@@ -55,7 +55,7 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 
 param.gndclear = -model.h_heel+0.015;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [0.5,1,5,5,1,0.5];
+param.jointW = [1,1,15,15,1,1];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
