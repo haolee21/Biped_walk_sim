@@ -441,12 +441,11 @@ dTau_toe_pushoff_ddq = [diff(Tau_toe_pushoff.',qd_t(1));
 dTau_toe_pushoff_dq1 =0.5*dTau_toe_pushoff_dq-dTau_toe_pushoff_ddq/sampT;
 dTau_toe_pushoff_dq2 = 0.5*dTau_toe_pushoff_dq+dTau_toe_pushoff_ddq/sampT;
 dTau_toe_pushoff_dfx = diff(Tau_toe_pushoff.',Fx);
-dTau_toe_pushoff_dfy = diff(Tau_toe_pushoff.',Fy);
 tasks{1,task_i} =@()matlabFunction(Tau_toe_pushoff,'file','grf/Tau_toe_pushoff','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1; 
 tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dq1,'file','grf/dTau_toe_pushoff_dq1','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;     
 tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dq2,'file','grf/dTau_toe_pushoff_dq2','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dfx,'file','grf/dTau_toe_pushoff_dfx','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dfy,'file','grf/dTau_toe_pushoff_dfy','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(dTau_toe_p_dfx,'file','grf/dTau_toe_pushoff_dfx','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
+
 
 % % first constraint
 % % Fy is equal to the spring-damper function when slack variables s_toe,
