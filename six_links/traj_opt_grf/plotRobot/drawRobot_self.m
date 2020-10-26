@@ -63,7 +63,7 @@ for frame=1:size(sol,2)
     fext_toe_loc=P6;
     Fs_toe = sol(p.numJ*2+1,frame);
     if(toePos_y(sol(:,frame).')<p.toe_th)
-        Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+        Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
     else
         Fn_toe=0;
     end
@@ -73,7 +73,7 @@ for frame=1:size(sol,2)
     fext_heel_loc=P7;
     Fs_heel = sol(p.numJ*2+2,frame);
     if(heelPos_y(sol(:,frame).')<p.toe_th)
-        Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax,p.dmax,p.sampT);
+        Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
     else
         Fn_heel=0;
     end

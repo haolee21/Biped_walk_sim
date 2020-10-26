@@ -26,14 +26,15 @@ param.numJ=6;
 param.toe_th =-model.h_heel+0.01;
 param.head_h = 1.1 ; %the head should be at least 1.6m
 
-param.gaitT = 0.55;
+param.gaitT = 0.5;
 param.sampT = 0.01;
 %param.init_y = -model.l_heel+0.01; %initial feet height
 param.heel_h = model.h_heel; %this is fix in the model parameter
 param.foot_l = model.l_foot;
 param.dmax =1e-2;
-param.cmax=10;
-param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
+param.cmax_toe=1000;
+param.cmax_heel=1000;
+param.k=model.totM*9.81/param.dmax^2/10;      %2e6;
 % param.k=2e6;
 
 % param.k=0;
@@ -46,7 +47,7 @@ param.ud=0.6;
 param.joint_fri = 0.003;
 
 % param.hip_feet_ratio = 4/0.7143;
-param.hip_feet_ratio = 3/0.7143;
+param.hip_feet_ratio = 2.5/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.hip_feet_ratio*model.l_foot;
 
@@ -55,9 +56,10 @@ param.toeLen=param.hip_feet_ratio*model.l_foot;
 
 param.gndclear = -model.h_heel+0.015;
 % param.jointW = [100,0.01,1,1,0.01,0.1];
-param.jointW = [1,1,15,15,1,1];
+param.jointW = [1,1,1,1,1,1];
 
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+
 
 param.ank_stiff=408.65;
 % param.knee_stiff=0;
@@ -72,12 +74,12 @@ param.max_Fx = model.totM*9.81*3;
 param.min_Fx = model.totM*9.81*3;
 % param.min_Fy = Inf;
 
-param.max_hip_tau =200;
-param.min_hip_tau = 200;
-param.max_kne_tau = 200;
-param.min_kne_tau =200;
-param.max_ank_tau =200;
-param.min_ank_tau= 200;
+param.max_hip_tau =150;
+param.min_hip_tau = 150;
+param.max_kne_tau = 150;
+param.min_kne_tau =150;
+param.max_ank_tau =150;
+param.min_ank_tau= 50;
 % 
 % param.max_hip_tau =50;
 % param.min_hip_tau = 50;
@@ -88,11 +90,17 @@ param.min_ank_tau= 200;
 % weight for obj fun
 param.loss_w.eng=1;
 param.loss_w.dyn=1000;
-param.loss_w.u_diff = 0;
+param.loss_w.u_diff = 1;
+param.loss_w.f_diff=0.1;
 % param.loss_w.hipLen=1e13;
 % param.loss_w.grf=1e3;
 % param.loss_w.yInit=1e13;
 % param.loss_w.hipVel=1e13;
+
+
+
+
+
 
 %% Initial conditions
 q1 =75;
@@ -146,25 +154,14 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
 %      linspace(qStart(6),qEnd(6),num_1+num_2+num_3)];
 % base on the trajectory, we can generate the joint torque, external force, and slack variable
 
-u_temp = 100*rand(size(q,1),size(q,2)-2);
+u = 0.1*param.max_hip_tau*rand(size(q,1),size(q,2));
 
 
-F_toe_temp = zeros(1,length(q)-2);
-F_heel_temp = zeros(1,length(q)-2);
-% for i=1:size(q,2)-2
-%     [u_temp(:,i),F_toe_temp(:,i),F_heel_temp(:,i), slack_var_temp(1,i),slack_var_temp(2,i)]=u_no_ext(q(:,i),q(:,i+1),q(:,i+2),param);
-% end
-
-% create different time axis to interp1 the u_temp, slack_var_temp
-t_ori = linspace(0,100,size(q,2));
-t_samp = linspace(0,100,size(q,2)-2);
-u = interp1(t_samp,u_temp.',t_ori).';
-
-Fext_toe = interp1(t_samp,F_toe_temp.',t_ori);
-Fext_heel = interp1(t_samp,F_heel_temp.',t_ori);
+Fx_toe = zeros(1,length(q));
+Fx_heel = zeros(1,length(q));
 
 
-x0 = [q;u;Fext_toe;Fext_heel];
+x0 = [q;u;Fx_toe;Fx_heel];
 % x0=[q;zeros(param.numJ+4+2,size(q,2))];
 % x0=load('x0_val').x;
 x0 = x0(:,1:end-1);
@@ -176,6 +173,35 @@ x0 = x0(:,1:end-1);
 % end
 prob.x0 = x0;
 
+%% upper and lower limit of the variables, the algorithm will only search solutions in these regions
+prob.ub = [179/180*pi*ones(1,size(x0,2));
+           -0.001*ones(1,size(x0,2))/180*pi;
+           75/180*pi*ones(1,size(x0,2));
+           -100/180*pi*ones(1,size(x0,2));
+           179/180*pi*ones(1,size(x0,2));
+           -60/180*pi*ones(1,size(x0,2));
+           param.min_ank_tau*ones(1,size(x0,2));
+           param.max_kne_tau*ones(1,size(x0,2));
+           param.max_hip_tau*ones(1,size(x0,2));
+           param.min_hip_tau*ones(1,size(x0,2));
+           param.min_kne_tau*ones(1,size(x0,2));
+           param.max_ank_tau*ones(1,size(x0,2));
+           param.max_Fx*ones(1,size(x0,2));
+           param.max_Fx*ones(1,size(x0,2))];
+prob.lb = [ones(1,size(x0,2))/180*pi;
+           -179/180*pi*ones(1,size(x0,2));
+           -75/180*pi*ones(1,size(x0,2));
+           -260/180*pi*ones(1,size(x0,2));
+            0.001*ones(1,size(x0,2))/180*pi;
+           -120/180*pi*ones(1,size(x0,2));
+           -param.max_ank_tau*ones(1,size(x0,2));
+           -param.min_kne_tau*ones(1,size(x0,2));
+           -param.min_hip_tau*ones(1,size(x0,2));
+           -param.max_hip_tau*ones(1,size(x0,2));
+           -param.max_kne_tau*ones(1,size(x0,2));
+           -param.min_ank_tau*ones(1,size(x0,2));
+           -param.max_Fx*ones(1,size(x0,2));
+           -param.max_Fx*ones(1,size(x0,2))];
 
 
 %% Constraints
@@ -243,43 +269,15 @@ Asamp(1:2,1:3) = [-1,-1,-1;
 Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT));
 
 prob.Aineq = blkdiag(Acell{:});
-Bsamp = [-90/180*pi;
-          110/180*pi];
+Bsamp = [-100/180*pi;
+          130/180*pi];
 prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT),1); 
 prob.nonlcon = @(x)discrete_nonlcon(x,param);
 
-%% upper and lower limit of the variables, the algorithm will only search solutions in these regions
-prob.ub = [179/180*pi*ones(1,size(x0,2));
-           -0.001*ones(1,size(x0,2))/180*pi;
-           75/180*pi*ones(1,size(x0,2));
-           -100/180*pi*ones(1,size(x0,2));
-           179/180*pi*ones(1,size(x0,2));
-           -60/180*pi*ones(1,size(x0,2));
-           param.min_ank_tau*ones(1,size(x0,2));
-           param.max_kne_tau*ones(1,size(x0,2));
-           param.max_hip_tau*ones(1,size(x0,2));
-           param.min_hip_tau*ones(1,size(x0,2));
-           param.min_kne_tau*ones(1,size(x0,2));
-           param.max_ank_tau*ones(1,size(x0,2));
-           param.max_Fx*ones(1,size(x0,2));
-           param.max_Fx*ones(1,size(x0,2))];
-prob.lb = [ones(1,size(x0,2))/180*pi;
-           -179/180*pi*ones(1,size(x0,2));
-           -75/180*pi*ones(1,size(x0,2));
-           -260/180*pi*ones(1,size(x0,2));
-            0.001*ones(1,size(x0,2))/180*pi;
-           -120/180*pi*ones(1,size(x0,2));
-           -param.max_ank_tau*ones(1,size(x0,2));
-           -param.min_kne_tau*ones(1,size(x0,2));
-           -param.min_hip_tau*ones(1,size(x0,2));
-           -param.max_hip_tau*ones(1,size(x0,2));
-           -param.max_kne_tau*ones(1,size(x0,2));
-           -param.min_ank_tau*ones(1,size(x0,2));
-           -param.max_Fx*ones(1,size(x0,2));
-           -param.max_Fx*ones(1,size(x0,2))];
+
 
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =3000;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...

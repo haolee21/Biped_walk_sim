@@ -10,10 +10,16 @@ obj=obj+0.5*sum(p.jointW.*sum(u.^2,2).')*p.loss_w.eng;
 dObj=dObj+reshape([zeros(p.numJ,size(x,2));diag(p.jointW)*u;zeros(2,size(x,2))]*p.loss_w.eng,[size(x,1)*size(x,2),1]);
 
 %% u diff constraint
-udiff = u(:,1:end-1)-u(:,2:end);
+udiff = x(p.numJ+1:end,1:end-1)-x(p.numJ+1:end,2:end);
 obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
-grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
-dObj = dObj + reshape([zeros(p.numJ,size(x,2));grad;zeros(2,size(x,2))],[size(x,1)*size(x,2),1]);
+grad = ([udiff,zeros(p.numJ+2,1)]-[zeros(p.numJ+2,1),udiff])*p.loss_w.u_diff;
+dObj = dObj + reshape([zeros(p.numJ,size(x,2));grad],[size(x,1)*size(x,2),1]);
+
+%% fext diff constraint
+fdiff = x(p.numJ*2+1:end,1:end-1)-x(p.numJ*2+1:end,2:end);
+obj = obj+0.5*sum(fdiff.^2,'all')*p.loss_w.f_diff;
+grad = ([fdiff,zeros(2,1)]-[zeros(2,1),fdiff])*p.loss_w.f_diff;
+dObj = dObj+reshape([zeros(p.numJ*2,size(x,2));grad],[size(x,1)*size(x,2),1]);
 
 %% dynamic constraint
 % [ceq,gradceq]=dynConst_discrete(x,p);

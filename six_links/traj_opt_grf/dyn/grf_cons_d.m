@@ -33,14 +33,14 @@ for i=1:size(x,2)-1 %we only have totT-1 constraints since all velocity is gener
 
     toe_flag = 0;
     if(toePos_y(q.')<p.toe_th)
-        grf_toe_c2(i,1)=Grf_toe_c2(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+        grf_toe_c2(i,1)=Grf_toe_c2(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax_toe,p.dmax,p.us,p.sampT);
         toe_flag=1;
     else
         grf_toe_c2(i,1)=fx_toe^2;
     end
     heel_flag=0;
     if(heelPos_y(q.')<p.toe_th)
-        grf_heel_c2(i,1)=Grf_heel_c2(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+        grf_heel_c2(i,1)=Grf_heel_c2(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax_heel,p.dmax,p.us,p.sampT);
         heel_flag=1;
     else
         grf_heel_c2(i,1)=fx_heel^2;
@@ -57,20 +57,20 @@ for i=1:size(x,2)-1 %we only have totT-1 constraints since all velocity is gener
         
     
         if(toe_flag==1)
-            dgrf_toe_c2(1:p.numJ,i,i)=reshape(dgrf_toe_c2(1:p.numJ,i,i),[p.numJ,1])+dGrf_toe_c2_dq1(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_toe_c2(1:p.numJ,i+1,i)=reshape(dgrf_toe_c2(1:p.numJ,i+1,i),[p.numJ,1])+dGrf_toe_c2_dq2(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_toe_c2(2*p.numJ+1,i,i)=dgrf_toe_c2(2*p.numJ+1,i,i)+0.5*dGrf_toe_c2_dfx(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_toe_c2(2*p.numJ+1,i+1,i)=dgrf_toe_c2(2*p.numJ+1,i+1,i)+0.5*dGrf_toe_c2_dfx(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+            dgrf_toe_c2(1:p.numJ,i,i)=reshape(dgrf_toe_c2(1:p.numJ,i,i),[p.numJ,1])+dGrf_toe_c2_dq1(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax_toe,p.dmax,p.us,p.sampT);
+            dgrf_toe_c2(1:p.numJ,i+1,i)=reshape(dgrf_toe_c2(1:p.numJ,i+1,i),[p.numJ,1])+dGrf_toe_c2_dq2(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax_toe,p.dmax,p.us,p.sampT);
+            dgrf_toe_c2(2*p.numJ+1,i,i)=dgrf_toe_c2(2*p.numJ+1,i,i)+0.5*dGrf_toe_c2_dfx(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax_toe,p.dmax,p.us,p.sampT);
+            dgrf_toe_c2(2*p.numJ+1,i+1,i)=dgrf_toe_c2(2*p.numJ+1,i+1,i)+0.5*dGrf_toe_c2_dfx(q.',dq.',fx_toe,p.toe_th,p.k,p.cmax_toe,p.dmax,p.us,p.sampT);
         else
             dgrf_toe_c2(2*p.numJ+1,i,i)=dgrf_toe_c2(2*p.numJ+1,i,i)+fx_toe;
             dgrf_toe_c2(2*p.numJ+1,i+1,i)=dgrf_toe_c2(2*p.numJ+1,i+1,i)+fx_toe;
             
         end
         if(heel_flag==1)
-            dgrf_heel_c2(1:p.numJ,i,i)=reshape(dgrf_heel_c2(1:p.numJ,i,i),[p.numJ,1])+dGrf_heel_c2_dq1(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_heel_c2(1:p.numJ,i+1,i)=reshape(dgrf_heel_c2(1:p.numJ,i+1,i),[p.numJ,1])+dGrf_heel_c2_dq2(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_heel_c2(2*p.numJ+2,i,i)=dgrf_heel_c2(2*p.numJ+2,i,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
-            dgrf_heel_c2(2*p.numJ+2,i+1,i)=dgrf_heel_c2(2*p.numJ+2,i+1,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(1:p.numJ,i,i)=reshape(dgrf_heel_c2(1:p.numJ,i,i),[p.numJ,1])+dGrf_heel_c2_dq1(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax_heel,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(1:p.numJ,i+1,i)=reshape(dgrf_heel_c2(1:p.numJ,i+1,i),[p.numJ,1])+dGrf_heel_c2_dq2(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax_heel,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(2*p.numJ+2,i,i)=dgrf_heel_c2(2*p.numJ+2,i,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax_heel,p.dmax,p.us,p.sampT);
+            dgrf_heel_c2(2*p.numJ+2,i+1,i)=dgrf_heel_c2(2*p.numJ+2,i+1,i)+0.5*dGrf_heel_c2_dfx(q.',dq.',fx_heel,p.toe_th,p.k,p.cmax_heel,p.dmax,p.us,p.sampT);
         else
             dgrf_heel_c2(2*p.numJ+2,i,i)=dgrf_heel_c2(2*p.numJ+2,i,i)+fx_heel;
             dgrf_heel_c2(2*p.numJ+2,i+1,i)=dgrf_heel_c2(2*p.numJ+2,i+1,i)+fx_heel;
