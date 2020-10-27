@@ -127,51 +127,48 @@ u = 0.1*param.max_hip_tau*rand(size(q,1),size(q,2));
 Fx_toe = zeros(1,length(q));
 Fx_heel = zeros(1,length(q));
 
-Fy_toe = zeros(1,param.phase1_idx).';
+Fy_toe = zeros(1,param.phase1_idx);
 
 % generate states that spans the whole time
 x1 = [q;u;Fx_toe;Fx_heel];
 x1 = x1(:,1:end-1); % remove the last since we will use directly mapping to solve it
 prob.x0=[reshape(x1,[size(x1,1)*size(x1,2),1]);Fy_toe];
 
-% save the dimension of x1 for easier decomposition
-param.x1Len.x = size(x1,1);
-param.x1Len.y = size(x1,2);
 
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
-ub1 = [179/180*pi*ones(1,size(x1,2));
-      -0.001*ones(1,size(x1,2))/180*pi;
-      75/180*pi*ones(1,size(x1,2));
-      -100/180*pi*ones(1,size(x1,2));
-      179/180*pi*ones(1,size(x1,2));
-      -60/180*pi*ones(1,size(x1,2));
-      param.min_ank_tau*ones(1,size(x1,2));
-      param.max_kne_tau*ones(1,size(x1,2));
-      param.max_hip_tau*ones(1,size(x1,2));
-      param.min_hip_tau*ones(1,size(x1,2));
-      param.min_kne_tau*ones(1,size(x1,2));
-      param.max_ank_tau*ones(1,size(x1,2));
-      param.max_Fx*ones(1,size(x1,2));
-      param.max_Fx*ones(1,size(x1,2))];
-lb1 = [ones(1,size(x1,2))/180*pi;
-      -179/180*pi*ones(1,size(x1,2));
-      -75/180*pi*ones(1,size(x1,2));
-      -260/180*pi*ones(1,size(x1,2));
-       0.001*ones(1,size(x1,2))/180*pi;
-      -120/180*pi*ones(1,size(x1,2));
-      -param.max_ank_tau*ones(1,size(x1,2));
-      -param.min_kne_tau*ones(1,size(x1,2));
-      -param.min_hip_tau*ones(1,size(x1,2));
-      -param.max_hip_tau*ones(1,size(x1,2));
-      -param.max_kne_tau*ones(1,size(x1,2));
-      -param.min_ank_tau*ones(1,size(x1,2));
-      -param.max_Fx*ones(1,size(x1,2));
-      -param.max_Fx*ones(1,size(x1,2))];
+ub1 = [179/180*pi*ones(1,size(x0,2));
+      -0.001*ones(1,size(x0,2))/180*pi;
+      75/180*pi*ones(1,size(x0,2));
+      -100/180*pi*ones(1,size(x0,2));
+      179/180*pi*ones(1,size(x0,2));
+      -60/180*pi*ones(1,size(x0,2));
+      param.min_ank_tau*ones(1,size(x0,2));
+      param.max_kne_tau*ones(1,size(x0,2));
+      param.max_hip_tau*ones(1,size(x0,2));
+      param.min_hip_tau*ones(1,size(x0,2));
+      param.min_kne_tau*ones(1,size(x0,2));
+      param.max_ank_tau*ones(1,size(x0,2));
+      param.max_Fx*ones(1,size(x0,2));
+      param.max_Fx*ones(1,size(x0,2))];
+lb1 = [ones(1,size(x0,2))/180*pi;
+      -179/180*pi*ones(1,size(x0,2));
+      -75/180*pi*ones(1,size(x0,2));
+      -260/180*pi*ones(1,size(x0,2));
+       0.001*ones(1,size(x0,2))/180*pi;
+      -120/180*pi*ones(1,size(x0,2));
+      -param.max_ank_tau*ones(1,size(x0,2));
+      -param.min_kne_tau*ones(1,size(x0,2));
+      -param.min_hip_tau*ones(1,size(x0,2));
+      -param.max_hip_tau*ones(1,size(x0,2));
+      -param.max_kne_tau*ones(1,size(x0,2));
+      -param.min_ank_tau*ones(1,size(x0,2));
+      -param.max_Fx*ones(1,size(x0,2));
+      -param.max_Fx*ones(1,size(x0,2))];
 ub2=param.max_Fy*ones(1,size(Fy_toe,1));
 lb2=zeros(1,size(Fy_toe,1));
-prob.ub = [reshape(ub1,[size(ub1,1)*size(ub1,2),1]);ub2.'];
-prob.lb = [reshape(lb1,[size(lb1,1)*size(lb1,2),1]);lb2.'];
+prob.ub = [ub1;ub2];
+prob.lb = [lb1;lb2];
 
 
 %% Constraints
@@ -207,7 +204,7 @@ prob.Aineq = [Aineq1,zeros(size(Aineq1,1),size(Fy_toe,1))];
 Bsamp = [-100/180*pi;
           130/180*pi];
 prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT),1); 
-
+prob.nonlcon = @(x)discrete_nonlcon(x,param);
 
 
 

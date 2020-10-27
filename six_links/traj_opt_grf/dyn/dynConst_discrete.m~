@@ -250,7 +250,7 @@ for i=1:size(x,2)-2
             gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ) = reshape(gradceq(2*p.numJ+1,i+2,(i-1)*p.numJ+1:i*p.numJ),[1,p.numJ])+0.25*dTau_toe_pushoff_dfx(qtemp32,qdiff32,fx_toe2,fy_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
             
             gradceq_fy(i+1,i) = gradceq_fy(i+1,i)+0.25*dTau_toe_pushoff_dfy(qtemp32,qdiff32,fx_toe2,fy_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
-            gradceq_fy(i+2,i) = gradceq_fy(i+2,i)+0.25*dTau_toe_pushoff_dfy(qtemp32,qdiff32,fx_toe2,fy_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+            gradceq_fy(i+2,i) = +0.25*dTau_toe_pushoff_dfy(qtemp32,qdiff32,fx_toe2,fy_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
             
         end
         
@@ -264,7 +264,7 @@ for i=1:size(x,2)-2
     
 end
 gradceq = reshape(gradceq,[size(x,1)*size(x,2),size(ceq,1)]);
-gradceq = [gradceq;gradceq_fy];
+
 % ceq=gather(ceq);
 % gradceq=gather(gradceq);
 end

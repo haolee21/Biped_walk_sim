@@ -1,6 +1,7 @@
 function [c,gradc] = yposCon(x,p)
 
-start_i = floor(size(x,2)*0.2);
+% start_i = floor(size(x,2)*0.2);
+start_i = 1;
 % start_i=1;
 end_i = floor(size(x,2)*0.8);
 % end_i = size(x,2);

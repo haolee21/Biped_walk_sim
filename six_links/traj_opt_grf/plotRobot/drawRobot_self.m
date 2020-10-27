@@ -130,7 +130,7 @@ for frame=1:size(sol,2)
     quiver(fext_heel_loc(1),fext_heel_loc(2),fext_heel(1),fext_heel(2),'color',[0.2,1,0],'LineStyle','--','LineWidth',2);
     quiver(fext_toe_loc(1),fext_toe_loc(2),fext_toe(1),fext_toe(2),'color',[0.2,1,0],'LineStyle','--','LineWidth',2);
     yline(p.toe_th,'-','Toe Height');
-    yline(p.head_h,'-','Head Height');
+  
     if(startHip<-50)
         startHip = P2(1);
     end
