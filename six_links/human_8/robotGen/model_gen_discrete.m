@@ -5,8 +5,8 @@
 clear;
 
 addpath ../
-
-numJ = 6;
+numJ=6;
+model.numJ = 6;
 totH=1.83; %total height % still not add up to 100%, but these are just numbers
 
 % for here I will redefine the foot length, the total foot length is
@@ -50,10 +50,13 @@ m_torso = m_trunk+m_head+(m_hand+m_upper_arm+m_fore_arm)*2; %this total mass is 
 model.totM = (m_foot+m_calf+m_thigh)*2+m_torso;
 model.h_heel = h_heel;
 model.l_foot = l_foot;
+model.l_calf = l_calf;
+model.l_thigh = l_thigh;
 model.m_foot = m_foot;
 model.m_calf = m_calf;
 model.m_thigh = m_thigh;
 model.m_torso = m_torso;
+model.totH = totH;
 save('model','model');
 %CoM pos
 lc_thigh2 = 0.433*l_thigh;
@@ -168,6 +171,7 @@ dL2 = 0.5*dyn.dLq+dyn.dLdq/sampT;
 J_hip = dyn.J_hip;
 J_heel = dyn.J_heel;
 J_toe = dyn.J_toe;
+
 hipPos = dyn.hipPos;
 toePos = dyn.toePos;
 heelPos =dyn.heelPos;
@@ -182,10 +186,15 @@ tasks{1,task_i} =@()matlabFunction(J_heel,'file','dyn/J_heel','vars',{q_t}); tas
 
 % save the position
 tasks{1,task_i} =@()matlabFunction(hipPos(1),'file','dyn/hipPos_x','vars',{q_t}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(hip_front(2),'file','dyn/hipPos_y','vars',{q_t}); task_i = task_i+1;
+
+
 tasks{1,task_i} =@()matlabFunction(toePos(1),'file','dyn/toePos_x','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(toePos(2),'file','dyn/toePos_y','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(heelPos(1),'file','dyn/heelPos_x','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(heelPos(2),'file','dyn/heelPos_y','vars',{q_t}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(ankle_back(1),'file','dyn/ankPos_x','vars',{q_t}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(ankle_back(2),'file','dyn/ankPos_y','vars',{q_t}); task_i = task_i+1;
 % save the gradient of the positions
 dHipPos_x=sym(zeros(numJ,1));
 dHipPos_y=sym(zeros(numJ,1));
@@ -193,6 +202,8 @@ dToePos_x=sym(zeros(numJ,1));
 dToePos_y=sym(zeros(numJ,1));
 dHeelPos_x=sym(zeros(numJ,1));
 dHeelPos_y=sym(zeros(numJ,1));
+dAnkPos_x = sym(zeros(numJ,1));
+dAnkPos_y = sym(zeros(numJ,1));
 for i=1:length(q_t)
     dHipPos_x(i,1)=diff(hipPos(1),q_t(i));
     dHipPos_y(i,1)=diff(hipPos(2),q_t(i));
@@ -200,6 +211,8 @@ for i=1:length(q_t)
     dToePos_y(i,1)=diff(toePos(2),q_t(i));
     dHeelPos_x(i,1)=diff(heelPos(1),q_t(i));
     dHeelPos_y(i,1)=diff(heelPos(2),q_t(i));
+    dAnkPos_x(i,1) = diff(ankle_back(1),q_t(i));
+    dAnkPos_y(i,1) = diff(ankle_back(2),q_t(i));
 end
 tasks{1,task_i} =@()matlabFunction(dHipPos_x,'file','dyn/dHipPos_x','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(dHipPos_y,'file','dyn/dHipPos_y','vars',{q_t}); task_i = task_i+1;
@@ -207,7 +220,8 @@ tasks{1,task_i} =@()matlabFunction(dToePos_x,'file','dyn/dToePos_x','vars',{q_t}
 tasks{1,task_i} =@()matlabFunction(dToePos_y,'file','dyn/dToePos_y','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(dHeelPos_x,'file','dyn/dHeelPos_x','vars',{q_t}); task_i = task_i+1;
 tasks{1,task_i} =@()matlabFunction(dHeelPos_y,'file','dyn/dHeelPos_y','vars',{q_t}); task_i = task_i+1;
-
+tasks{1,task_i} =@()matlabFunction(dAnkPos_x,'file','dyn/dAnkPos_x','vars',{q_t}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(dAnkPos_y,'file','dyn/dAnkPos_y','vars',{q_t}); task_i = task_i+1;
 
 
 % the return values are the Discrete Lagrangian

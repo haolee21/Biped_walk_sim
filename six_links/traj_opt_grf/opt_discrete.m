@@ -9,7 +9,7 @@ addpath obj/
 addpath gaitCon/
 addpath plotRobot/
 addpath forward_dyn
-
+addpath initPos/
 addpath (['../',modelName,'/robotGen/'])
 addpath (['../',modelName,'/robotGen/grad/'])
 % addpath (['../',modelName,'/robotGen/posCons/'])
@@ -48,11 +48,14 @@ param.ank_stiff=408.65/5;
 
 %gait param
 param.hip_feet_ratio = 2/0.7143;
+param.gait_feet_ratio = 4/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
-param.toeLen=param.hip_feet_ratio*model.l_foot;
+param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
 
+param.startH = 0.9*(model.l_thigh+model.l_calf);
 
+q0 = returnInitPos(param);
 % force/torque bounds
 param.max_Fy = model.totM*9.81*2;
 param.max_Fx = model.totM*9.81*2;
@@ -76,12 +79,20 @@ param.loss_w.fy_diff=0.1;
 
 
 %% Initial conditions
-q1 =68;
-q2 = -1;
-q3 =90-q1-q2;
-q4 = -100-q1;
-q5 = 15;
-q6 = -180-q1-q2-q3-q4-q5;%+atan2d(param.heel_h,0.26);%0.26 is feet length
+% q1 =68;
+% q2 = -1;
+% q3 =90-q1-q2;
+% q4 = -100-q1;
+% q5 = 15;
+% q6 = -180-q1-q2-q3-q4-q5;%+atan2d(param.heel_h,0.26);%0.26 is feet length
+% qStart=[q1/180*pi,q2/180*pi,q3/180*pi,q4/180*pi,q5/180*pi,q6/180*pi];
+q0 = q0*180/pi;
+q1 = q0(1);
+q2 = q0(2);
+q3 = q0(3);
+q4 = q0(4);
+q5 = q0(5);
+q6 = q0(6);
 qStart=[q1/180*pi,q2/180*pi,q3/180*pi,q4/180*pi,q5/180*pi,q6/180*pi];
 
 q1_mid_1 = 100;
@@ -103,9 +114,9 @@ qMid_2 = [q1_mid_2,q2_mid_2,q3_mid_2,q4_mid_2,q5_mid_2,q6_mid_2]*pi/180;
 q1_end = -q6;
 q2_end = -q5;
 q3_end = -180-q4;
-q4_end = -q1_end-90;
+q4_end = -180-q3;
 q5_end = -q2;
-q6_end = -180-q1_end-q2_end-q3_end-q4_end-q5_end;
+q6_end = -q1;
 qEnd = [q1_end,q2_end,q3_end,q4_end,q5_end,q6_end]*pi/180;
 
 num_1 = floor(length(time)/4);
@@ -262,7 +273,7 @@ prob.nonlcon=@(x)discrete_nonlcon(x,param);
 % 
 % x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
 % prob.x0(1:2*param.numJ,:)=[x0_1,x];
-fval_opt=1e10;
+pfval_opt=1e10;
 xopt = prob.x0;
 % for i=1:7
 
