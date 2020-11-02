@@ -1,4 +1,4 @@
-function drawRobot_self(sol,p,idx,grf_plot)
+function drawRobot_self(sol,fy_toe,p,grf_plot,idx)
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -8,7 +8,7 @@ function drawRobot_self(sol,p,idx,grf_plot)
 %   p = parameter struct
 %
 
-if nargin <3
+if nargin <5
     idx = 0;
 end
 if nargin <4
@@ -61,21 +61,28 @@ for frame=1:size(sol,2)
     
     %plot grf
     fext_toe_loc=P6;
-    Fs_toe = sol(p.numJ*2+1,frame);
-    if(toePos_y(sol(:,frame).')<p.toe_th)
-        Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
-    else
-        Fn_toe=0;
-    end
-%     [~,~,Fn_toe,Fs_toe]=toe_grf(sol(:,frame).',p);
-    
-    % force act on the heel
     fext_heel_loc=P7;
+    Fs_toe = sol(p.numJ*2+1,frame);
     Fs_heel = sol(p.numJ*2+2,frame);
-    if(heelPos_y(sol(:,frame).')<p.toe_th)
-        Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+    Fn_toe=0;
+    Fn_heel=0;
+    if(frame>p.phase1_idx)
+        if(toePos_y(sol(:,frame).')<p.toe_th)
+            Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+            
+        end
+        %     [~,~,Fn_toe,Fs_toe]=toe_grf(sol(:,frame).',p);
+        
+        % force act on the heel
+        
+        
+        if(heelPos_y(sol(:,frame).')<p.toe_th)
+            Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+            
+        end
     else
-        Fn_heel=0;
+        Fs_heel =0;
+        Fn_toe = fy_toe(frame);
     end
 %     [~,~,Fn_heel,Fs_heel]=heel_grf(sol(:,frame).',p);
         
@@ -99,16 +106,17 @@ for frame=1:size(sol,2)
     hold off;
     clf(fig);
     % Plot the ground:
-    plot(xBnd,[p.toe_th,p.toe_th],'LineWidth',6,'Color',colorGround);
+    plot(xBnd,[-p.model.h_heel,-p.model.h_heel],'LineWidth',6,'Color',colorGround);
     
     hold on;
     
     % Plot the links:
-    plot(x(1:3),y(1:3),'LineWidth',4,'Color',colorStance);
+    plot([-p.model.l_foot,0,x(1:3)],[-p.model.h_heel,-p.model.h_heel,y(1:3)],'LineWidth',4,'Color',colorStance);
     plot(x(3:4),y(3:4),'LineWidth',4,'Color',colorTorso);
     plot(x([3,5,6,7,8]),y([3,5,6,7,8]),'LineWidth',4,'Color',colorSwing);
     
     % Plot the joints:
+    
     plot(0, 0,'k.','MarkerSize',30);
     plot(P1(1), P1(2),'k.','MarkerSize',30);
     plot(P2(1), P2(2),'k.','MarkerSize',30);
@@ -116,7 +124,8 @@ for frame=1:size(sol,2)
     plot(P4(1), P4(2),'k.','MarkerSize',30);
     plot(P5(1), P5(2),'k.','MarkerSize',30);
     plot(P6(1), P6(2),'k.','MarkerSize',30);
-    
+    plot(-p.model.l_foot,-p.model.h_heel,'g','MarkerSize',30);
+    plot(0,-p.model.h_heel,'k','MarkerSize',30);
     % Plot the CoM:
     plot(G1(1), G1(2),'ko','MarkerSize',8,'LineWidth',2);
     plot(G2(1), G2(2),'ko','MarkerSize',8,'LineWidth',2);

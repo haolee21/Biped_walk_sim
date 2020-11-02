@@ -63,7 +63,7 @@ lc_thigh1 = l_thigh-lc_thigh2;
 
 lc_foot = 0.4415*l_foot-l_heel; % de Leva, shift by l_heel since the joint is not at the end of foot 
 % include head when calculating, suppose neck is fixed
-lc_torso = (0.4486*l_torso*m_torso+(0.1166*totH*(1-0.5976)+l_torso)*m_head)/(m_head+m_trunk); 
+lc_torso = (0.4486*l_torso*m_torso+(0.1166*totH*(1-0.5976)+l_torso)*m_head)/(m_head+m_torso); 
 
 
 
@@ -363,7 +363,7 @@ heel_pos = turnRTtoMatrix(robot.A([1,2,3,4,5,6],q_t))*[-l_heel,h_heel,0,1].';
 heel_pos_x = heel_pos(1);
 heel_pos_y = heel_pos(2);
 
-syms Fx real
+syms Fx Fy real
 syms k cmax dmax us H real;
 ks =2;
 Fy_toe = k*(H-toe_pos_y)^ks -cmax*(H-toe_pos_y)/dmax*toe_vel_y;
@@ -425,7 +425,29 @@ tasks{1,task_i} =@()matlabFunction(dTau_heel_dfx,'file','grf/dTau_heel_dfx','var
 
 
 
-
+% external ground reaction Tau for ankle push-off phase
+Tau_toe_pushoff = J_toe(1:2,:).'*[Fx;Fy];
+dTau_toe_pushoff_dq = [diff(Tau_toe_pushoff.',q_t(1));
+                       diff(Tau_toe_pushoff.',q_t(2));
+                       diff(Tau_toe_pushoff.',q_t(3));
+                       diff(Tau_toe_pushoff.',q_t(4));
+                       diff(Tau_toe_pushoff.',q_t(5));
+                       diff(Tau_toe_pushoff.',q_t(6))];
+dTau_toe_pushoff_ddq = [diff(Tau_toe_pushoff.',qd_t(1));
+                        diff(Tau_toe_pushoff.',qd_t(2));
+                        diff(Tau_toe_pushoff.',qd_t(3));
+                        diff(Tau_toe_pushoff.',qd_t(4));
+                        diff(Tau_toe_pushoff.',qd_t(5));
+                        diff(Tau_toe_pushoff.',qd_t(6))];
+dTau_toe_pushoff_dq1 =0.5*dTau_toe_pushoff_dq-dTau_toe_pushoff_ddq/sampT;
+dTau_toe_pushoff_dq2 = 0.5*dTau_toe_pushoff_dq+dTau_toe_pushoff_ddq/sampT;
+dTau_toe_pushoff_dfx = diff(Tau_toe_pushoff.',Fx);
+dTau_toe_pushoff_dfy = diff(Tau_toe_pushoff.',Fy);
+tasks{1,task_i} =@()matlabFunction(Tau_toe_pushoff,'file','grf/Tau_toe_pushoff','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1; 
+tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dq1,'file','grf/dTau_toe_pushoff_dq1','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;     
+tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dq2,'file','grf/dTau_toe_pushoff_dq2','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dfx,'file','grf/dTau_toe_pushoff_dfx','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dfy,'file','grf/dTau_toe_pushoff_dfy','vars',{q_t,qd_t,Fx,Fy,H,k,cmax,dmax,sampT}); task_i = task_i+1;
 
 
 

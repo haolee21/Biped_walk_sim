@@ -48,6 +48,7 @@ m_trunk = 0.4346*totM;
 m_torso = m_trunk+m_head+(m_hand+m_upper_arm+m_fore_arm)*2; %this total mass is not 100% though
 
 model.totM = (m_foot+m_calf+m_thigh)*2+m_torso;
+model.l_heel = l_heel;
 model.h_heel = h_heel;
 model.l_foot = l_foot;
 model.m_foot = m_foot;

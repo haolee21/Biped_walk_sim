@@ -1,9 +1,9 @@
-function [c,gradc] = yposCon(x,p)
+function [c,gradc] = yposCon(x,fy,p)
 
-% start_i = floor(size(x,2)*0.2);
-start_i = 1;
+start_i = floor(size(x,2)*0.4);
+% start_i = p.phase1_idx+8;
 % start_i=1;
-end_i = floor(size(x,2)*0.8);
+end_i = floor(size(x,2)*0.6);
 % end_i = size(x,2);
 c_toe = zeros(1,end_i-start_i+1);
 c_heel = zeros(1,end_i-start_i+1);
@@ -28,6 +28,6 @@ c = [c_toe.';c_heel.'];
 gradc = [reshape(gradc_toe,[size(x,1)*size(x,2),size(c_toe,2)]),...
          reshape(gradc_heel,[size(x,1)*size(x,2),size(c_heel,2)])]; %c was tranpose in the previous line
 
-
+gradc = [gradc;zeros(length(fy),size(gradc,2))];
 
 end
