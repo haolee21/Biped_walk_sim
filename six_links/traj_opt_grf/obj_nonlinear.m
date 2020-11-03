@@ -1,10 +1,11 @@
 function [obj,dObj]=obj_nonlinear(x,p)
 %% reshape x from vector to two matrix
-x1 = x(1:p.x1Len.x*p.x1Len.y);
+x0 = x(1:p.x0Len);
+x1 = x(p.x0Len+1:p.x1Len.x*p.x1Len.y+p.x0Len);
 x1 = reshape(x1,[p.x1Len.x,p.x1Len.y]);
-fy = x(p.x1Len.x*p.x1Len.y+1:end);
+fy = x(p.x1Len.x*p.x1Len.y+1+p.x0Len:end);
 
-
+x1 = [[p.qStart.';x0],x1];
 
 u = x1(p.numJ+1:2*p.numJ,:);
 
@@ -33,5 +34,5 @@ obj = obj+0.5*sum(fydiff.^2,'all')*p.loss_w.fy_diff;
 grad_fy = ([fydiff;0]-[0;fydiff])*p.loss_w.fy_diff;
 
 
-dObj = [dObj;grad_fy];
+dObj = [dObj(p.numJ+1:end);grad_fy];
 end

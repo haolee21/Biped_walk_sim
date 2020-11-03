@@ -1,8 +1,10 @@
 function [c,ceq,gradc,gradceq] = discrete_nonlcon(x,p)
 %% add the last column
-x1 = x(1:p.x1Len.x*p.x1Len.y);
+x0 = x(1:p.x0Len);
+x1 = x(p.x0Len+1:p.x1Len.x*p.x1Len.y+p.x0Len);
 x1 = reshape(x1,[p.x1Len.x,p.x1Len.y]);
-fy_toe = x(p.x1Len.x*p.x1Len.y+1:end);
+fy_toe = x(p.x1Len.x*p.x1Len.y+1+p.x0Len:end);
+x1 = [[p.qStart.';x0],x1];
 
 x0 = p.mapA*x1(:,1)-p.mapB;
 x1 = [x1,x0];
@@ -46,7 +48,7 @@ gradc = gradc(1:end-p.numJ*2-2,:);
 gradceq(1:p.numJ*2+2,:) = gradceq(1:p.numJ*2+2,:)+p.mapA*gradceq(end-p.numJ*2-1:end,:);
 gradceq = gradceq(1:end-p.numJ*2-2,:);
 
-gradc = [gradc;gradc_fy];
-gradceq = [gradceq;gradceq_fy];
+gradc = [gradc(p.numJ+1:end,:);gradc_fy]; % remove first frame's q gradient
+gradceq = [gradceq(p.numJ+1:end,:);gradceq_fy];
 
 end

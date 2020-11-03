@@ -20,7 +20,7 @@ prob.lb = [1/180*pi;
       -135/180*pi];
 iterTime=1000;
 prob.Aineq = [-1,-1,-1,0,0,0];
-prob.bineq = -pi/2;
+prob.bineq =-95/180*pi;
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
