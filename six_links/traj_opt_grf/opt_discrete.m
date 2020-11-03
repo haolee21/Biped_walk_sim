@@ -53,7 +53,7 @@ param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
 
-param.startH = 0.92*(model.l_thigh+model.l_calf);
+param.startH = 0.85*(model.l_thigh+model.l_calf);
 
 q0 = returnInitPos(param);
 % force/torque bounds
@@ -254,7 +254,7 @@ prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)-1,1);
 
 
 prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =30;
+iterTime =1000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
