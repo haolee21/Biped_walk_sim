@@ -44,11 +44,11 @@ param.k=model.totM*9.81/param.dmax^2/5;      %2e6;
 param.us=0.8;
 param.joint_fri = 0.003;
 param.knee_stiff =76.325/10; % I use max moment (MVC/angle), since the stiffness of the paper is too high
-param.ank_stiff=408.65/5;
+param.ank_stiff=408.65;
 
 %gait param
-param.hip_feet_ratio = 2/0.7143;
-param.gait_feet_ratio = 4/0.7143;
+param.hip_feet_ratio = 3/0.7143;
+param.gait_feet_ratio = 6/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
@@ -67,7 +67,7 @@ param.min_hip_tau = 250;
 param.max_kne_tau = 250;
 param.min_kne_tau =250;
 param.max_ank_tau =250;
-param.min_ank_tau= 15;
+param.min_ank_tau= 250;
 
 % weight for obj fun
 param.loss_w.u_diff = 0;
@@ -202,8 +202,14 @@ prob.lb = [reshape(lb1,[size(lb1,1)*size(lb1,2),1]);lb2.'];
 numS = param.numJ*2+2; % do not consider Fy_toe here, this variable does not span the whole time horizon
  
 
-prob.Aeq = [];
-prob.beq = [];                                            
+prob.Aeq = zeros(6,size(prob.x0,1));
+prob.Aeq(1,1)=1;
+prob.Aeq(2,2)=1;
+prob.Aeq(3,3)=1;
+prob.Aeq(4,4)=1;
+prob.Aeq(5,5)=1;
+prob.Aeq(6,6)=1;
+prob.beq = qStart.';                                            
 
 % inequality constraints
 
