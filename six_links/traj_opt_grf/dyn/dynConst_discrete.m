@@ -111,10 +111,14 @@ for i=1:size(x,2)-2
         
     else
         if(i<p.phase1_idx-2)
+            
             fy_toe1 = (fy(i)+fy(i+1))/2;
             fy_toe2 = (fy(i+1)+fy(i+2))/2;
             tau_toe_1 = Tau_toe_pushoff(qtemp21,qdiff21,fx_toe1,fy_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
             tau_toe_2 = Tau_toe_pushoff(qtemp32,qdiff32,fx_toe2,fy_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+            
+            tau_heel_1 = zeros(p.numJ,1);
+            tau_heel_2 = zeros(p.numJ,1);
         end
     end
     tau_toe = (tau_toe_1+tau_toe_2)/2;

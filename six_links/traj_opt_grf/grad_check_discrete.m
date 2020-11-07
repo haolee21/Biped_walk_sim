@@ -3,7 +3,7 @@
 clear;
 clc;
 
-modelName='human_7';
+modelName='human_8';
 
 %add share functions
 addpath dyn/

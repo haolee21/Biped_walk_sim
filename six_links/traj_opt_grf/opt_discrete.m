@@ -28,7 +28,7 @@ time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = 0.15;
 param.phase1_idx= floor(ankle_push_ratio*length(time));
 
-param.jointW = [3,3,6,6,3,3];
+param.jointW = [3,6,3,3,6,3];
 % param.jointW = [10,10,10,10,10,10];
 
 % physical param
@@ -47,8 +47,8 @@ param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of
 param.ank_stiff=408.65;
 
 %gait param
-param.hip_feet_ratio = 3/0.7143;
-param.gait_feet_ratio = 5/0.7143;
+param.hip_feet_ratio = 2/0.7143;
+param.gait_feet_ratio = 4/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
@@ -57,20 +57,20 @@ param.startH = 0.85*(model.l_thigh+model.l_calf);
 
 q0 = returnInitPos(param);
 % force/torque bounds
-param.max_Fy = model.totM*9.81*2;
-param.max_Fx = model.totM*9.81*2;
-param.min_Fx = model.totM*9.81*2;
+param.max_Fy = model.totM*9.81/2;
+param.max_Fx = model.totM*9.81/2;
+param.min_Fx = model.totM*9.81/2;
 
 
-param.max_hip_tau =250;
-param.min_hip_tau = 250;
-param.max_kne_tau = 250;
-param.min_kne_tau =250;
-param.max_ank_tau =250;
-param.min_ank_tau= 250;
+param.max_hip_tau =1.5*model.totM;
+param.min_hip_tau = 1.5*model.totM;
+param.max_kne_tau = 1.5*model.totM;
+param.min_kne_tau =1.5*model.totM;
+param.max_ank_tau =1.5*model.totM;
+param.min_ank_tau= 15;
 
 % weight for obj fun
-param.loss_w.u_diff = 0;
+param.loss_w.u_diff = 1;
 param.loss_w.f_diff=0.1;
 param.loss_w.eng=1;
 param.loss_w.fy_diff=0.1;
@@ -133,9 +133,9 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
      linspace(qStart(6),qMid_1(6),num_1),linspace(qMid_1(6),qMid_2(6),num_2),linspace(qMid_2(6),qEnd(6),num_3)];
 
 
-u = [0.1*param.min_ank_tau*rand(1,size(q,2));
-     0.1*param.max_hip_tau*rand(size(q,1)-2,size(q,2));
-     0.1*param.min_ank_tau*rand(1,size(q,2))];
+u = [0.001*param.min_ank_tau*rand(1,size(q,2));
+     0.001*param.max_hip_tau*rand(size(q,1)-2,size(q,2));
+     0.001*param.min_ank_tau*rand(1,size(q,2))];
 
 
 
@@ -159,53 +159,66 @@ param.x1Len.x = size(x1,1);
 param.x1Len.y = size(x1,2);
 
 
+% scale matrix, try to normalize all the states to make it more accurate
+param.q_scale = 1;
+param.u_scale = 10;
+param.fext_scale = 500;
+mat_s1 = diag([param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
+mat_s2_single = diag([param.q_scale*ones(1,param.numJ),param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
+mat_s2_cell = repmat({mat_s2_single},1,floor(param.gaitT/param.sampT)-1);
+mat_s2 = blkdiag(mat_s2_cell{:});
+mat_s3 = diag(param.fext_scale*ones(1,param.phase1_idx));
+mat_s_tot = {mat_s1,mat_s2,mat_s3};
+param.mat_s = blkdiag(mat_s_tot{:});
+
+
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
-ub0 = [param.min_ank_tau;
-      param.max_kne_tau;
-      param.max_hip_tau;
-      param.min_hip_tau;
-      param.min_kne_tau;
-      param.max_ank_tau;
-      param.max_Fx;
-      param.max_Fx];
-lb0 = [-param.max_ank_tau;
-       -param.min_kne_tau;
-       -param.min_hip_tau;
-       -param.max_hip_tau;
-       -param.max_kne_tau;
-       -param.min_ank_tau;
-       -param.max_Fx;
-       -param.max_Fx];
-ub1 = [179/180*pi*ones(1,length(time)-2);
-      -0.001*180/pi*ones(1,length(time)-2);
-      75/180*pi*ones(1,length(time)-2);
-      -100/180*pi*ones(1,length(time)-2);
-      179/180*pi*ones(1,length(time)-2);
-      -60/180*pi*ones(1,length(time)-2);
-      param.min_ank_tau*ones(1,length(time)-2);
-      param.max_kne_tau*ones(1,length(time)-2);
-      param.max_hip_tau*ones(1,length(time)-2);
-      param.min_hip_tau*ones(1,length(time)-2);
-      param.min_kne_tau*ones(1,length(time)-2);
-      param.max_ank_tau*ones(1,length(time)-2);
-      param.max_Fx*ones(1,length(time)-2);
-      param.max_Fx*ones(1,length(time)-2)];
-lb1 = [1/180*pi*ones(1,length(time)-2);
-      -179/180*pi*ones(1,length(time)-2);
-      -75/180*pi*ones(1,length(time)-2);
-      -260/180*pi*ones(1,length(time)-2);
-       0.001/180*pi*ones(1,length(time)-2);
-      -135/180*pi*ones(1,length(time)-2);
-      -param.max_ank_tau*ones(1,length(time)-2);
-      -param.min_kne_tau*ones(1,length(time)-2);
-      -param.min_hip_tau*ones(1,length(time)-2);
-      -param.max_hip_tau*ones(1,length(time)-2);
-      -param.max_kne_tau*ones(1,length(time)-2);
-      -param.min_ank_tau*ones(1,length(time)-2);
-      -param.max_Fx*ones(1,length(time)-2);
-      -param.max_Fx*ones(1,length(time)-2)];
-ub2=param.max_Fy*ones(1,size(Fy_toe,1));
-lb2=-0.0001*ones(1,size(Fy_toe,1));
+ub0 = [param.min_ank_tau/param.u_scale;
+      param.max_kne_tau/param.u_scale;
+      param.max_hip_tau/param.u_scale;
+      param.min_hip_tau/param.u_scale;
+      param.min_kne_tau/param.u_scale;
+      param.max_ank_tau/param.u_scale;
+      param.max_Fx/param.fext_scale;
+      param.max_Fx/param.fext_scale];
+lb0 = [-param.max_ank_tau/param.u_scale;
+       -param.min_kne_tau/param.u_scale;
+       -param.min_hip_tau/param.u_scale;
+       -param.max_hip_tau/param.u_scale;
+       -param.max_kne_tau/param.u_scale;
+       -param.min_ank_tau/param.u_scale;
+       -param.max_Fx/param.fext_scale;
+       -param.max_Fx/param.fext_scale];
+ub1 = [179/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -0.001*180/pi*ones(1,length(time)-2)/param.q_scale;
+      75/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -100/180*pi*ones(1,length(time)-2)/param.q_scale;
+      179/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -60/180*pi*ones(1,length(time)-2)/param.q_scale;
+      param.min_ank_tau*ones(1,length(time)-2)/param.u_scale;
+      param.max_kne_tau*ones(1,length(time)-2)/param.u_scale;
+      param.max_hip_tau*ones(1,length(time)-2)/param.u_scale;
+      param.min_hip_tau*ones(1,length(time)-2)/param.u_scale;
+      param.min_kne_tau*ones(1,length(time)-2)/param.u_scale;
+      param.max_ank_tau*ones(1,length(time)-2)/param.u_scale;
+      param.max_Fx*ones(1,length(time)-2)/param.fext_scale;
+      param.max_Fx*ones(1,length(time)-2)/param.fext_scale];
+lb1 = [1/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -179/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -75/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -260/180*pi*ones(1,length(time)-2)/param.q_scale;
+       0.001/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -135/180*pi*ones(1,length(time)-2)/param.q_scale;
+      -param.max_ank_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.min_kne_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.min_hip_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.max_hip_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.max_kne_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.min_ank_tau*ones(1,length(time)-2)/param.u_scale;
+      -param.max_Fx*ones(1,length(time)-2)/param.fext_scale;
+      -param.max_Fx*ones(1,length(time)-2)/param.fext_scale];
+ub2=param.max_Fy*ones(1,size(Fy_toe,1))/param.fext_scale;
+lb2=-0.0001*ones(1,size(Fy_toe,1))/param.fext_scale;
 prob.ub = [ub0;reshape(ub1,[size(ub1,1)*size(ub1,2),1]);ub2.'];
 prob.lb = [lb0;reshape(lb1,[size(lb1,1)*size(lb1,2),1]);lb2.'];
 
@@ -246,19 +259,19 @@ Asamp(1:2,1:3) = [-1,-1,-1;
 Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT)-1);
 Aineq1=blkdiag(Acell{:});
 prob.Aineq = [zeros(size(Aineq1,1),size(x0_frame0,1)),Aineq1,zeros(size(Aineq1,1),size(Fy_toe,1))];
-Bsamp = [-91/180*pi;
-          100/180*pi];
+Bsamp = [-91/180*pi/param.q_scale;
+          100/180*pi/param.q_scale];
 prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)-1,1); 
 
 
 
 
-prob.objective=@(x)obj_nonlinear(x,param);
-iterTime =1000;
+
+iterTime =3000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
-    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true,'OutputFcn',@outfun);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'OutputFcn',@outfun);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 
@@ -291,9 +304,15 @@ param.mapA = map_A;
 mapB = [0;0;pi;pi;0;0;0;0;0;0;0;0;0;0];
 param.mapB = mapB;
 
+
+
+
+
+%% scale x0
+
+prob.x0 = param.mat_s\prob.x0;
 prob.nonlcon=@(x)discrete_nonlcon(x,param);
-
-
+prob.objective=@(x)obj_nonlinear(x,param);
 % 
 % 
 % x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
@@ -313,8 +332,9 @@ xopt = prob.x0;
 % f = forward_dyn(xopt,param);
 % prob.x0 = [x(1:param.numJ,:);f];
 % end
-prob.x0 = prob.x0+0.01*diag(rand(size(prob.ub,1),1))*(prob.ub-prob.lb)+prob.lb;
 
+% scale x back
+x = param.mat_s*x;
 
 %%
 result.x = x;

@@ -28,7 +28,7 @@ time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = 0.15;
 param.phase1_idx= floor(ankle_push_ratio*length(time));
 
-param.jointW = [3,3,6,6,3,3];
+param.jointW = [3,6,3,3,6,3];
 % param.jointW = [10,10,10,10,10,10];
 
 % physical param
@@ -53,7 +53,7 @@ param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
 
-param.startH = 0.92*(model.l_thigh+model.l_calf);
+param.startH = 0.85*(model.l_thigh+model.l_calf);
 
 q0 = returnInitPos(param);
 % force/torque bounds
@@ -62,15 +62,15 @@ param.max_Fx = model.totM*9.81*2;
 param.min_Fx = model.totM*9.81*2;
 
 
-param.max_hip_tau =250;
-param.min_hip_tau = 250;
-param.max_kne_tau = 250;
-param.min_kne_tau =250;
-param.max_ank_tau =250;
-param.min_ank_tau= 250;
+param.max_hip_tau =5000;
+param.min_hip_tau = 5000;
+param.max_kne_tau = 5000;
+param.min_kne_tau =5000;
+param.max_ank_tau =5000;
+param.min_ank_tau= 15;
 
 % weight for obj fun
-param.loss_w.u_diff = 0;
+param.loss_w.u_diff = 1;
 param.loss_w.f_diff=0.1;
 param.loss_w.eng=1;
 param.loss_w.fy_diff=0.1;
@@ -157,6 +157,19 @@ prob.x0=[x0_frame0;reshape(x1,[size(x1,1)*size(x1,2),1]);Fy_toe];
 % save the dimension of x1 for easier decomposition
 param.x1Len.x = size(x1,1);
 param.x1Len.y = size(x1,2);
+
+
+% scale matrix, try to normalize all the states to make it more accurate
+param.q_scale = 10;
+param.u_scale = 0.2;
+param.fext_scale = 1;
+mat_s1 = diag([param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
+mat_s2_single = diag([param.q_scale*ones(1,param.numJ),param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
+mat_s2_cell = repmat({mat_s2_single},1,floor(param.gaitT/param.sampT)-1);
+mat_s2 = blkdiag(mat_s2_cell{:});
+mat_s3 = diag(param.fext_scale*ones(1,param.phase1_idx));
+mat_s_tot = {mat_s1,mat_s2,mat_s3};
+param.mat_s = blkdiag(mat_s_tot{:});
 
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
@@ -253,7 +266,7 @@ prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)-1,1);
 
 
 
-prob.objective=@(x)obj_nonlinear(x,param);
+
 iterTime =3000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
@@ -291,9 +304,15 @@ param.mapA = map_A;
 mapB = [0;0;pi;pi;0;0;0;0;0;0;0;0;0;0];
 param.mapB = mapB;
 
+
+
+
+
+%% scale x0
+
+prob.x0 = param.mat_s\prob.x0;
 prob.nonlcon=@(x)discrete_nonlcon(x,param);
-
-
+prob.objective=@(x)obj_nonlinear(x,param);
 % 
 % 
 % x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
@@ -306,23 +325,25 @@ xopt = prob.x0;
 % prob.x0 = diag(rand(size(prob.ub,1),1))*(prob.ub-prob.lb)+prob.lb;
 
 
-[x,fval,exitflag,output] = fmincon(prob);
+ [x,fval,exitflag,output] = fmincon(prob);
 % if fval<fval_opt
 %     xopt = x;
 % end
 % f = forward_dyn(xopt,param);
 % prob.x0 = [x(1:param.numJ,:);f];
 % end
-prob.x0 = prob.x0+0.01*diag(rand(size(prob.ub,1),1))*(prob.ub-prob.lb)+prob.lb;
 
+% scale x back
+x = param.mat_s*x;
 
 %%
 result.x = x;
 x0_frame = x(1:param.x0Len);
-x1 = x(1:param.x1Len.x*param.x1Len.y);
+x1 = x(param.x0Len+1:param.x1Len.x*param.x1Len.y+param.x0Len);
 x1 = reshape(x1,[param.x1Len.x,param.x1Len.y]);
-fy_toe = x(param.x1Len.x*param.x1Len.y+1:end);
+fy_toe = x(param.x1Len.x*param.x1Len.y+1+param.x0Len:end);
 
+x1 = [[qStart.';x0_frame],x1];
 x0 = param.mapA*x1(:,1)-param.mapB;
 x1 = [x1,x0];
 

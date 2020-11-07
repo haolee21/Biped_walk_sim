@@ -1,16 +1,16 @@
 function [ceq,ceq_grad]=ankle_push_cons(x,fy,p)
 
 
-ceq = zeros(p.phase1_idx,1);
+ceq = zeros(p.phase1_idx-1,1); % -1 since the first frame must be correct
 ceq_grad = zeros(size(x,1),size(x,2),size(ceq,1));
 % ceq2 = zeros(p.phase1_idx,1);
 % ceq_grad2 = zeros(size(x,1),size(x,2),size(ceq2,1));
 
-for i=1:p.phase1_idx
-    x1= x(:,i).';
+for i=1:p.phase1_idx-1
+    x1= x(:,i+1).';
     
     ceq(i,1)=toePos_y(x1)+p.model.h_heel;
-    ceq_grad(1:p.numJ,i,i)=dToePos_y(x1).';
+    ceq_grad(1:p.numJ,i+1,i)=dToePos_y(x1).';
     
 %     ceq2(i,1)=heelPos_x(x1)-p.toeLen/2;
 %     ceq_grad2(1:p.numJ,i,i)=ceq_grad2(1:p.numJ,i,i)+dHeelPos_x(x1); 

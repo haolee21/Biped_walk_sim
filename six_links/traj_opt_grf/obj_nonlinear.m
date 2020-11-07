@@ -1,4 +1,6 @@
 function [obj,dObj]=obj_nonlinear(x,p)
+x = p.mat_s*x;
+
 %% reshape x from vector to two matrix
 x0 = x(1:p.x0Len);
 x1 = x(p.x0Len+1:p.x1Len.x*p.x1Len.y+p.x0Len);
@@ -17,10 +19,10 @@ obj=obj+0.5*sum(p.jointW.*sum(u.^2,2).')*p.loss_w.eng;
 dObj=dObj+reshape([zeros(p.numJ,size(x1,2));diag(p.jointW)*u;zeros(2,size(x1,2))]*p.loss_w.eng,[size(x1,1)*size(x1,2),1]);
 
 %% u diff constraint
-% udiff = x1(p.numJ+1:p.numJ+6,1:end-1)-x1(p.numJ+1:p.numJ+6,2:end);
-% obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
-% grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
-% dObj = dObj + reshape([zeros(p.numJ,size(x1,2));grad;zeros(2,size(x1,2))],[size(x1,1)*size(x1,2),1]);
+udiff = x1(p.numJ+1:p.numJ+6,1:end-1)-x1(p.numJ+1:p.numJ+6,2:end);
+obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
+grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
+dObj = dObj + reshape([zeros(p.numJ,size(x1,2));grad;zeros(2,size(x1,2))],[size(x1,1)*size(x1,2),1]);
 
 %% fext diff constraint
 fdiff = x1(p.numJ*2+1:p.numJ*2+2,1:end-1)-x1(p.numJ*2+1:p.numJ*2+2,2:end);
@@ -30,9 +32,9 @@ dObj = dObj+reshape([zeros(p.numJ*2,size(x1,2));grad],[size(x1,1)*size(x1,2),1])
 
 fydiff = fy(1:end-1)-fy(2:end);
 obj = obj+0.5*sum(fydiff.^2,'all')*p.loss_w.fy_diff;
-
 grad_fy = ([fydiff;0]-[0;fydiff])*p.loss_w.fy_diff;
 
 
 dObj = [dObj(p.numJ+1:end);grad_fy];
+dObj = p.mat_s*dObj;
 end

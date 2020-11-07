@@ -1,4 +1,8 @@
 function [c,ceq,gradc,gradceq] = discrete_nonlcon(x,p)
+% scale x back
+x = p.mat_s*x;
+
+
 %% add the last column
 x0 = x(1:p.x0Len);
 x1 = x(p.x0Len+1:p.x1Len.x*p.x1Len.y+p.x0Len);
@@ -14,7 +18,7 @@ x1 = [x1,x0];
 [ceq1,gradceq1] = dynConst_discrete(x1,fy_toe,p);
 % [ceq2,gradceq2] = hipCon(x1,fy_toe,p);
 % [ceq2,gradceq2] = toeCon(x,p);
-[c1,ceq3,gradc1,gradceq3]=grf_cons_d(x1,fy_toe,p);
+[c1,~,gradc1,~]=grf_cons_d(x1,fy_toe,p);
 
 
 % [ceq4,gradceq4]=initYPosCons(x1,fy_toe,p);
@@ -31,8 +35,8 @@ x1 = [x1,x0];
 % gradc=gradc2;
 c = [c1;c2];
 gradc=[gradc1,gradc2];
-ceq=[ceq1;ceq3;ceq5];
-gradceq=[gradceq1,gradceq3,gradceq5];
+ceq=[ceq1;ceq5];
+gradceq=[gradceq1,gradceq5];
 
 
 
@@ -51,4 +55,7 @@ gradceq = gradceq(1:end-p.numJ*2-2,:);
 gradc = [gradc(p.numJ+1:end,:);gradc_fy]; % remove first frame's q gradient
 gradceq = [gradceq(p.numJ+1:end,:);gradceq_fy];
 
+% scale gradient 
+gradc = p.mat_s*gradc;
+gradceq = p.mat_s*gradceq;
 end
