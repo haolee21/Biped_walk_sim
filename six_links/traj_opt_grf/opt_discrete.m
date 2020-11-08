@@ -62,12 +62,12 @@ param.max_Fx = model.totM*9.81/2;
 param.min_Fx = model.totM*9.81/2;
 
 
-param.max_hip_tau =1.5*model.totM;
-param.min_hip_tau = 1.5*model.totM;
-param.max_kne_tau = 1.5*model.totM;
-param.min_kne_tau =1.5*model.totM;
-param.max_ank_tau =1.5*model.totM;
-param.min_ank_tau= 15;
+param.max_hip_tau =3*model.totM;
+param.min_hip_tau = 3*model.totM;
+param.max_kne_tau = 3*model.totM;
+param.min_kne_tau =3*model.totM;
+param.max_ank_tau =3*model.totM;
+param.min_ank_tau= 30;
 
 % weight for obj fun
 param.loss_w.u_diff = 1;
@@ -267,7 +267,7 @@ prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)-1,1);
 
 
 
-iterTime =3000;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
