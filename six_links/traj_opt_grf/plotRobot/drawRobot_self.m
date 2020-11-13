@@ -1,4 +1,4 @@
-function drawRobot_self(sol,fy_toe,p,grf_plot,idx)
+function drawRobot_self(sol,p,grf_plot,idx)
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -8,10 +8,10 @@ function drawRobot_self(sol,fy_toe,p,grf_plot,idx)
 %   p = parameter struct
 %
 
-if nargin <5
+if nargin <4
     idx = 0;
 end
-if nargin <4
+if nargin <3
     grf_plot=1;
 end
 
@@ -82,7 +82,7 @@ for frame=1:size(sol,2)
         end
     else
         Fs_heel =0;
-        Fn_toe = fy_toe(frame);
+        Fn_toe = sol(p.numJ*2+3,frame);
     end
 %     [~,~,Fn_heel,Fs_heel]=heel_grf(sol(:,frame).',p);
         

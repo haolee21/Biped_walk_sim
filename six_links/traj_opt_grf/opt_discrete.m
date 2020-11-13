@@ -22,14 +22,16 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
 
-param.gaitT = 0.6;
+param.gaitT = 0.55;
 param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = 0.15;
-param.phase1_idx= floor(ankle_push_ratio*length(time));
+param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
+param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 
-param.jointW = [3,6,3,3,6,3];
-% param.jointW = [10,10,10,10,10,10];
+
+param.jointW = [30,60,30,30,60,30];
+% param.jointW = [1,1,1,1,1,1];
 
 % physical param
 param.numJ=6;
@@ -40,40 +42,40 @@ param.foot_l = model.l_foot;
 param.dmax =1e-2;
 param.cmax_toe=10;
 param.cmax_heel=100;
-param.k=model.totM*9.81/param.dmax^2/5;      %2e6;
+param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 param.joint_fri = 0.003;
 param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 param.ank_stiff=408.65;
 
 %gait param
-param.hip_feet_ratio = 2/0.7143;
-param.gait_feet_ratio = 4/0.7143;
+param.hip_feet_ratio = 3.5/0.7143;
+param.gait_feet_ratio = 5/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
 
-param.startH = 0.85*(model.l_thigh+model.l_calf);
+param.startH = 0.9*(model.l_thigh+model.l_calf);
 
 q0 = returnInitPos(param);
 % force/torque bounds
-param.max_Fy = model.totM*9.81/2;
-param.max_Fx = model.totM*9.81/2;
-param.min_Fx = model.totM*9.81/2;
+param.max_Fy = model.totM*9.81;
+param.max_Fx = model.totM*9.81;
+param.min_Fx = model.totM*9.81;
 
 
-param.max_hip_tau =3*model.totM;
-param.min_hip_tau = 3*model.totM;
-param.max_kne_tau = 3*model.totM;
-param.min_kne_tau =3*model.totM;
-param.max_ank_tau =3*model.totM;
-param.min_ank_tau= 30;
+param.max_hip_tau =model.totM;
+param.min_hip_tau =model.totM;
+param.max_kne_tau =model.totM;
+param.min_kne_tau =model.totM;
+param.max_ank_tau =model.totM;
+param.min_ank_tau= 0;
 
 % weight for obj fun
 param.loss_w.u_diff = 1;
 param.loss_w.f_diff=0.1;
-param.loss_w.eng=1;
-param.loss_w.fy_diff=0.1;
+param.loss_w.eng=10;
+param.loss_w.fy_diff=0;
 
 
 
@@ -138,89 +140,105 @@ u = [0.001*param.min_ank_tau*rand(1,size(q,2));
      0.001*param.min_ank_tau*rand(1,size(q,2))];
 
 
+Fext1 = [zeros(1,param.phase1_idx);
+        0.01*model.totM*9.81*rand(1,param.phase1_idx)];
 
-Fx_toe = zeros(1,length(q));
-Fx_heel = zeros(1,length(q));
+Fext2 = [zeros(1,length(q)-param.phase2_idx+1);
+        zeros(1,length(q)-param.phase2_idx+1)];
 
-Fy_toe = model.totM*9.81*rand(1,param.phase1_idx).';
+%remove the extra variables (q does not need start/end frame, u does not
+%need end frame)
 
-% generate states that spans the whole time
-x1 = [q;u;Fx_toe;Fx_heel];
-x1 = x1(:,2:end-1); % remove the last since we will use directly mapping to solve it
-
-
-x0_frame0 = zeros(param.numJ+2,1);
-param.x0Len = size(x0_frame0,1);
-prob.x0=[x0_frame0;reshape(x1,[size(x1,1)*size(x1,2),1]);Fy_toe];
-% prob.x0 = load('x0_val.mat').x;
-
-% save the dimension of x1 for easier decomposition
-param.x1Len.x = size(x1,1);
-param.x1Len.y = size(x1,2);
+q = q(:,2:end-1);
+u = u(:,1:end-1);
+param.varDim.q1 = size(q,1);
+param.varDim.q2 = size(q,2);
+param.varDim.u1 = size(u,1);
+param.varDim.u2 = size(u,2);
+param.varDim.fext1_1 = size(Fext1,1);
+param.varDim.fext1_2 = size(Fext1,2);
+param.varDim.fext2_1 = size(Fext2,1);
+param.varDim.fext2_2 = size(Fext2,2);
 
 
 % scale matrix, try to normalize all the states to make it more accurate
 param.q_scale = 1;
-param.u_scale = 10;
-param.fext_scale = 500;
-mat_s1 = diag([param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
-mat_s2_single = diag([param.q_scale*ones(1,param.numJ),param.u_scale*ones(1,param.numJ),param.fext_scale*ones(1,2)]);
-mat_s2_cell = repmat({mat_s2_single},1,floor(param.gaitT/param.sampT)-1);
-mat_s2 = blkdiag(mat_s2_cell{:});
-mat_s3 = diag(param.fext_scale*ones(1,param.phase1_idx));
-mat_s_tot = {mat_s1,mat_s2,mat_s3};
+param.u_scale = 1;
+param.fext_scale = 100;
+
+
+
+prob.x0=[reshape(q/param.q_scale,[size(q,1)*size(q,2),1]);
+         reshape(u/param.u_scale,[size(u,1)*size(u,2),1]);
+         reshape(Fext1/param.fext_scale,[param.varDim.fext1_1*param.varDim.fext1_2,1]);
+         reshape(Fext2/param.fext_scale,[param.varDim.fext2_1*param.varDim.fext2_2,1])];
+% prob.x0 = load('x0_val.mat').x;
+
+% save the dimension of x1 for easier decomposition
+
+
+
+
+
+mat_q = eye(param.varDim.q1*param.varDim.q2)*param.q_scale;
+mat_u = eye(param.varDim.u1*param.varDim.u2)*param.u_scale;
+mat_fext1 = eye(param.varDim.fext1_2*2)*param.fext_scale;
+mat_fext2 = eye(param.varDim.fext2_2*2)*param.fext_scale;
+mat_s_tot = {mat_q,mat_u,mat_fext1,mat_fext2};
 param.mat_s = blkdiag(mat_s_tot{:});
 
 
+
+
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
-ub0 = [param.min_ank_tau/param.u_scale;
-      param.max_kne_tau/param.u_scale;
-      param.max_hip_tau/param.u_scale;
-      param.min_hip_tau/param.u_scale;
-      param.min_kne_tau/param.u_scale;
-      param.max_ank_tau/param.u_scale;
-      param.max_Fx/param.fext_scale;
-      param.max_Fx/param.fext_scale];
-lb0 = [-param.max_ank_tau/param.u_scale;
-       -param.min_kne_tau/param.u_scale;
-       -param.min_hip_tau/param.u_scale;
-       -param.max_hip_tau/param.u_scale;
-       -param.max_kne_tau/param.u_scale;
-       -param.min_ank_tau/param.u_scale;
-       -param.max_Fx/param.fext_scale;
-       -param.max_Fx/param.fext_scale];
-ub1 = [179/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -0.001*180/pi*ones(1,length(time)-2)/param.q_scale;
-      75/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -100/180*pi*ones(1,length(time)-2)/param.q_scale;
-      179/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -60/180*pi*ones(1,length(time)-2)/param.q_scale;
-      param.min_ank_tau*ones(1,length(time)-2)/param.u_scale;
-      param.max_kne_tau*ones(1,length(time)-2)/param.u_scale;
-      param.max_hip_tau*ones(1,length(time)-2)/param.u_scale;
-      param.min_hip_tau*ones(1,length(time)-2)/param.u_scale;
-      param.min_kne_tau*ones(1,length(time)-2)/param.u_scale;
-      param.max_ank_tau*ones(1,length(time)-2)/param.u_scale;
-      param.max_Fx*ones(1,length(time)-2)/param.fext_scale;
-      param.max_Fx*ones(1,length(time)-2)/param.fext_scale];
-lb1 = [1/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -179/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -75/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -260/180*pi*ones(1,length(time)-2)/param.q_scale;
-       0.001/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -135/180*pi*ones(1,length(time)-2)/param.q_scale;
-      -param.max_ank_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.min_kne_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.min_hip_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.max_hip_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.max_kne_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.min_ank_tau*ones(1,length(time)-2)/param.u_scale;
-      -param.max_Fx*ones(1,length(time)-2)/param.fext_scale;
-      -param.max_Fx*ones(1,length(time)-2)/param.fext_scale];
-ub2=param.max_Fy*ones(1,size(Fy_toe,1))/param.fext_scale;
-lb2=-0.0001*ones(1,size(Fy_toe,1))/param.fext_scale;
-prob.ub = [ub0;reshape(ub1,[size(ub1,1)*size(ub1,2),1]);ub2.'];
-prob.lb = [lb0;reshape(lb1,[size(lb1,1)*size(lb1,2),1]);lb2.'];
+
+
+ubq = [179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -0.001*180/pi*ones(1,param.varDim.q2)/param.q_scale;
+      75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -60/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+lbq = [1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+       0.001/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -135/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+  
+ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+       param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+       param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+       param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+       param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+       param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+lbu =[-param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+      -param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+      -param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+      -param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+      -param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+      -param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+  
+ubfx1=[ param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
+        param.max_Fy*ones(1,param.varDim.fext1_2)/param.fext_scale];  
+lbfx1=[-param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
+        zeros(1,param.varDim.fext1_2)/param.fext_scale];
+
+ubfx2=[ param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale;
+        param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];  
+lbfx2=[-param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale;
+       -param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];
+
+
+
+prob.ub = [reshape(ubq,[size(ubq,1)*size(ubq,2),1]);
+           reshape(ubu,[size(ubu,1)*size(ubu,2),1]);
+           reshape(ubfx1,[size(ubfx1,1)*size(ubfx1,2),1]);
+           reshape(ubfx2,[size(ubfx2,1)*size(ubfx2,2),1])];
+prob.lb = [reshape(lbq,[size(ubq,1)*size(ubq,2),1]);
+           reshape(lbu,[size(ubu,1)*size(ubu,2),1]);
+           reshape(lbfx1,[size(ubfx1,1)*size(ubfx1,2),1]);
+           reshape(lbfx2,[size(ubfx2,1)*size(ubfx2,2),1])];
 
 
 %% Constraints
@@ -230,8 +248,7 @@ prob.lb = [lb0;reshape(lb1,[size(lb1,1)*size(lb1,2),1]);lb2.'];
 % equality constraints
 % the A matrix is define in the following way:
 %     [x(0),x(1),x(2).......x(end)], one condition, one row
-% numCond = 13; %start-end pos conditions, velocity conditions
-numS = param.numJ*2+2; % do not consider Fy_toe here, this variable does not span the whole time horizon
+
  
 
 % prob.Aeq = zeros(6,size(prob.x0,1));
@@ -251,23 +268,24 @@ numS = param.numJ*2+2; % do not consider Fy_toe here, this variable does not spa
 %  Fx<us*Fy
 % -Fx<us*Fy
 
-Asamp = zeros(2,numS); % create A for single frame
+Asamp = zeros(2,param.numJ); % create A for single frame
 Asamp(1:2,1:3) = [-1,-1,-1;
                    1, 1, 1];
 
 
-Acell = repmat({Asamp},1,floor(param.gaitT/param.sampT)-1);
+Acell = repmat({Asamp},1,param.varDim.q2);
 Aineq1=blkdiag(Acell{:});
-prob.Aineq = [zeros(size(Aineq1,1),size(x0_frame0,1)),Aineq1,zeros(size(Aineq1,1),size(Fy_toe,1))];
+prob.Aineq = zeros(size(Aineq1,1),size(prob.x0,1)*size(prob.x0,2));
+prob.Aineq(:,1:param.varDim.q1*param.varDim.q2)=Aineq1;
 Bsamp = [-91/180*pi/param.q_scale;
           100/180*pi/param.q_scale];
-prob.bineq = repmat(Bsamp,floor(param.gaitT/param.sampT)-1,1); 
+prob.bineq = repmat(Bsamp,param.varDim.q2,1); 
 
 
 
 
 
-iterTime =8000;
+iterTime =500;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
@@ -285,24 +303,25 @@ prob2=prob;
 
 % create mapping for start and end frame to reduce one constraint (linear),
 % otherwise it will easily converges to infeasible.
-map_A = zeros(size(x1,1));
-map_A(1,6)=-1;
-map_A(2,5)=-1;
-map_A(3,4)=-1;
-map_A(4,3)=-1;
-map_A(5,2)=-1;
-map_A(6,1)=-1;
-map_A(7,param.numJ+6)=-1;
-map_A(8,param.numJ+5)=-1;
-map_A(9,param.numJ+4)=-1;
-map_A(10,param.numJ+3)=-1;
-map_A(11,param.numJ+2)=-1;
-map_A(12,param.numJ+1)=-1;
-map_A(13,13)=1;
-map_A(14,14)=1;
-param.mapA = map_A;
-mapB = [0;0;pi;pi;0;0;0;0;0;0;0;0;0;0];
-param.mapB = mapB;
+param.map_A1 = zeros(param.numJ);
+param.map_A1(1,6)=-1;
+param.map_A1(2,5)=-1;
+param.map_A1(3,4)=-1;
+param.map_A1(4,3)=-1;
+param.map_A1(5,2)=-1;
+param.map_A1(6,1)=-1;
+param.map_A2 = zeros(param.numJ); 
+param.map_A2(1,6)=-1;
+param.map_A2(2,5)=-1;
+param.map_A2(3,4)=-1;
+param.map_A2(4,3)=-1;
+param.map_A2(5,2)=-1;
+param.map_A2(6,1)=-1;
+
+
+param.mapB1 = [0;0;pi;pi;0;0];
+param.mapB2 = [0;0;0;0;0;0];
+
 
 
 
@@ -317,40 +336,71 @@ prob.objective=@(x)obj_nonlinear(x,param);
 % 
 % x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
 % prob.x0(1:2*param.numJ,:)=[x0_1,x];
-pfval_opt=1e10;
-xopt = prob.x0;
+
+
 % for i=1:7
 
 %use random number for x0 
 % prob.x0 = diag(rand(size(prob.ub,1),1))*(prob.ub-prob.lb)+prob.lb;
 
+% for i=1:3
 
 [x,fval,exitflag,output] = fmincon(prob);
-% if fval<fval_opt
-%     xopt = x;
+% 
+%     prob.x0=fwd_dyn(x,param);
 % end
-% f = forward_dyn(xopt,param);
-% prob.x0 = [x(1:param.numJ,:);f];
-% end
-
 % scale x back
-x = param.mat_s*x;
+result.xopt = x;
+p =param;
+x = p.mat_s*x;
 
-%%
-result.x = x;
-x0_frame = x(1:param.x0Len);
-x1 = x(param.x0Len+1:param.x1Len.x*param.x1Len.y+param.x0Len);
-x1 = reshape(x1,[param.x1Len.x,param.x1Len.y]);
-fy_toe = x(param.x1Len.x*param.x1Len.y+1+param.x0Len:end);
 
-x1 = [[qStart.';x0_frame],x1];
-x0 = param.mapA*x1(:,1)-param.mapB;
-x1 = [x1,x0];
+%% add the last column
+q = x(1:p.varDim.q1*p.varDim.q2);
+q = reshape(q,[p.varDim.q1,p.varDim.q2]);
+x = x(p.varDim.q1*p.varDim.q2+1:end);
+
+u = x(1:p.varDim.u1*p.varDim.u2);
+u = reshape(u,[p.varDim.u1,p.varDim.u2]);
+x = x(p.varDim.u1*p.varDim.u2+1:end);
+
+fext1 = x(1:p.varDim.fext1_1*p.varDim.fext1_2);
+fext1 = reshape(fext1,[p.varDim.fext1_1,p.varDim.fext1_2]);
+x = x(p.varDim.fext1_1*p.varDim.fext1_2+1:end);
+
+fext2 = x(1:p.varDim.fext2_1*p.varDim.fext2_2);
+fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
+
+%% reconstruct the array, pad zeros to make it more continuous when calculating gradient
+% the structure of x is
+% [ q;
+%   u;
+%   Fext1(1),0,Fext2(1);
+%   0       ,0,Fext2(2);
+%   Fext1(2),0,0]
+
+% Fext1: grf acting at phase1
+% Fext1(1): fx_toe, Fext1(2): fy_toe
+
+
+% Fext2: grf acting at phase2
+% Fext2(1): fx_toe, Fext2(2): fx_heel
+
+% recreate q
+q = [p.qStart.',q,p.map_A1*p.qStart.'-p.mapB1];
+u = [u,p.map_A2*u(:,1)-p.mapB2];
+
+x = zeros(3,size(q,2));
+x(1,1:p.varDim.fext1_2) = fext1(1,:);
+x(1,end-p.varDim.fext2_2+1:end) = fext2(1,:);
+x(2,end-p.varDim.fext2_2+1:end) = fext2(2,:);
+x(3,1:p.varDim.fext1_2) = fext1(2,:);
+
+x = [q;u;x];
 
 [t1,~]=clock;
 fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d')];
-result.x1 = x1;
-result.fy_toe = x(end-param.phase1_idx+1:end);
+result.x = x;
 result.fval=fval;
 result.exitflag = exitflag;
 result.output = output;

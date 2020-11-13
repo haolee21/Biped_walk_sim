@@ -1,15 +1,15 @@
-function [c,gradc] = yposCon(x,fy,p)
+function [c,gradc] = yposCon(x,p)
 
-start_i = floor(size(x,2)*0.2);
+start_i = floor(size(x,2)*0.4);
 % start_i = p.phase1_idx+8;
 % start_i=1;
-end_i = floor(size(x,2)*0.7);
+end_i = floor(size(x,2)*0.6);
 % end_i = size(x,2);
-c_toe = zeros(1,end_i-start_i+1);
-c_heel = zeros(1,end_i-start_i+1);
+c_toe = zeros(end_i-start_i+1,1);
+c_heel = zeros(end_i-start_i+1,1);
 % c = gpuArray(c);
-gradc_toe = zeros(size(x,1),size(x,2),size(c_toe,2));
-gradc_heel = zeros(size(x,1),size(x,2),size(c_heel,2));
+gradc_toe = zeros(p.numJ,size(x,2),size(c_toe,2));
+gradc_heel = zeros(p.numJ,size(x,2),size(c_heel,2));
 % gradc = gpuArray(gradc);
 
 %% we made some modification, originally we only need ypos>0, in order to create ground clearance, we need in the middle > param.toe_th
@@ -18,16 +18,18 @@ gradc_heel = zeros(size(x,1),size(x,2),size(c_heel,2));
 
 
 for i=1:end_i-start_i+1
-    curX = x(:,start_i+i-1);
+    curX = x(1:p.numJ,start_i+i-1);
     c_toe(i)=p.gndclear-toePos_y(curX.');
     c_heel(i)=p.gndclear-heelPos_y(curX.');
     gradc_toe(1:p.numJ,start_i+i-1,i) = -1*dToePos_y(curX.').';
     gradc_heel(1:p.numJ,start_i+i-1,i)=-1*dHeelPos_y(curX.').';
 end
-c = [c_toe.';c_heel.'];
-gradc = [reshape(gradc_toe,[size(x,1)*size(x,2),size(c_toe,2)]),...
-         reshape(gradc_heel,[size(x,1)*size(x,2),size(c_heel,2)])]; %c was tranpose in the previous line
+c = [c_toe;c_heel];
+gradc_q = cat(3,gradc_toe,gradc_heel);
+gradc_q = gradc_q(:,2:end-1,:);
+gradc_q = reshape(gradc_q,[p.numJ*size(gradc_q,2),size(gradc_q,3)]);
+gradc = zeros(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+p.varDim.fext1_1*p.varDim.fext1_2+p.varDim.fext2_1*p.varDim.fext2_2,size(c,1));
 
-gradc = [gradc;zeros(length(fy),size(gradc,2))];
+gradc(1:size(gradc_q,1),:) = gradc_q;
 
 end

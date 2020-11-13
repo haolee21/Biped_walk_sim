@@ -1,40 +1,43 @@
 function [obj,dObj]=obj_nonlinear(x,p)
 x = p.mat_s*x;
-
-%% reshape x from vector to two matrix
-x0 = x(1:p.x0Len);
-x1 = x(p.x0Len+1:p.x1Len.x*p.x1Len.y+p.x0Len);
-x1 = reshape(x1,[p.x1Len.x,p.x1Len.y]);
-fy = x(p.x1Len.x*p.x1Len.y+1+p.x0Len:end);
-
-x1 = [[p.qStart.';x0],x1];
-
-u = x1(p.numJ+1:2*p.numJ,:);
-
 obj=0;
-dObj=zeros(size(x1,1)*size(x1,2),1);
+dObj=zeros(size(x,1),1);
+%% reshape x from vector to two matrix
+q = x(1:p.varDim.q1*p.varDim.q2);
+q = reshape(q,[p.varDim.q1,p.varDim.q2]);
+x = x(p.varDim.q1*p.varDim.q2+1:end);
+
+u = x(1:p.varDim.u1*p.varDim.u2);
+u = reshape(u,[p.varDim.u1,p.varDim.u2]);
+x = x(p.varDim.u1*p.varDim.u2+1:end);
+
+fext1 = x(1:p.varDim.fext1_1*p.varDim.fext1_2);
+fext1 = reshape(fext1,[p.varDim.fext1_1,p.varDim.fext1_2]);
+x = x(p.varDim.fext1_1*p.varDim.fext1_2+1:end);
+
+fext2 = x(1:p.varDim.fext2_1*p.varDim.fext2_2);
+fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
+
+
+
+
 
 %% energy consumption
 obj=obj+0.5*sum(p.jointW.*sum(u.^2,2).')*p.loss_w.eng;
-dObj=dObj+reshape([zeros(p.numJ,size(x1,2));diag(p.jointW)*u;zeros(2,size(x1,2))]*p.loss_w.eng,[size(x1,1)*size(x1,2),1]);
+dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(diag(p.jointW)*u,[p.varDim.u1*p.varDim.u2,1])*p.loss_w.eng;zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
+
 
 %% u diff constraint
-udiff = x1(p.numJ+1:p.numJ+6,1:end-1)-x1(p.numJ+1:p.numJ+6,2:end);
-obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
-grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
-dObj = dObj + reshape([zeros(p.numJ,size(x1,2));grad;zeros(2,size(x1,2))],[size(x1,1)*size(x1,2),1]);
+% udiff = u(:,1:end-1)-u(:,2:end);
+% obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
+% grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
+% dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(grad,[p.varDim.u1*p.varDim.u2,1]);zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
 
 %% fext diff constraint
-fdiff = x1(p.numJ*2+1:p.numJ*2+2,1:end-1)-x1(p.numJ*2+1:p.numJ*2+2,2:end);
-obj = obj+0.5*sum(fdiff.^2,'all')*p.loss_w.f_diff;
-grad = ([fdiff,zeros(2,1)]-[zeros(2,1),fdiff])*p.loss_w.f_diff;
-dObj = dObj+reshape([zeros(p.numJ*2,size(x1,2));grad],[size(x1,1)*size(x1,2),1]);
-
-fydiff = fy(1:end-1)-fy(2:end);
-obj = obj+0.5*sum(fydiff.^2,'all')*p.loss_w.fy_diff;
-grad_fy = ([fydiff;0]-[0;fydiff])*p.loss_w.fy_diff;
+obj =obj+0.5*sum([fext1,fext2].^2,'all');
+dObj = dObj+[zeros(p.varDim.q1*p.varDim.q2,1);zeros(p.varDim.u1*p.varDim.u2,1);reshape(fext1,[p.varDim.fext1_1*p.varDim.fext1_2,1]);reshape(fext2,[p.varDim.fext2_1*p.varDim.fext2_2,1])];
 
 
-dObj = [dObj(p.numJ+1:end);grad_fy];
+
 dObj = p.mat_s*dObj;
 end

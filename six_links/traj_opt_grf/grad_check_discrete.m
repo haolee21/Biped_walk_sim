@@ -27,9 +27,20 @@ model = load(['../',modelName,'/robotGen/model']).model;
 
 x1 = load('x_test').x;
 p = load('p_test.mat').param;
+
+% p.knee_stiff =0; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+% p.ank_stiff=0;
 % p.us = 0.8;
 
 x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
+
+%% check gradient on q
+% x2(p.varDim.q1*p.varDim.q2+1:end)=x1(p.varDim.q1*p.varDim.q2+1:end);
+% x2(1:p.varDim.q1*p.varDim.q2)=x1(1:p.varDim.q1*p.varDim.q2);
+
+x2(1:p.varDim.q1*p.varDim.q2) = x1(1:p.varDim.q1*p.varDim.q2);
+x2(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end) = x1(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end);
+
 dx = x2-x1;
 p.loss_w.fy_diff=0.1;
 % x_s1 = x1(1:p.x1Len.x*p.x1Len.y);

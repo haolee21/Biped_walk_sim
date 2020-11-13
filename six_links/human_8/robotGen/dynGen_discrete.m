@@ -78,7 +78,7 @@ for i=1:numJ
 %     potential energy
     lc = [robot.links(i).r,1].';
     
-    lc_base = rotM{1,i}*lc;
+    lc_base = rotM{1,i}*lc; % the rotM is translational matrix
     V_cur = robot.links(i).m*g.'*lc_base(1:3,1);
     
     
