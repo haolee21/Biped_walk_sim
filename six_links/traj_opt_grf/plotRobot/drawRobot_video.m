@@ -1,4 +1,4 @@
-function drawRobot_video(sol,fy_toe,p,grf_plot,fileName)
+function drawRobot_video(sol,p,grf_plot,fileName)
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -7,10 +7,10 @@ function drawRobot_video(sol,fy_toe,p,grf_plot,fileName)
 %   q = [5, 1] = column vector of a single robot configuration
 %   p = parameter struct
 %
-if nargin <5
+if nargin <4
     idx = 0;
 end
-if nargin <4
+if nargin <3
     grf_plot=1;
 end
 
@@ -66,9 +66,9 @@ for frame=1:size(sol,2)
     Fs_heel = sol(p.numJ*2+2,frame);
     Fn_toe=0;
     Fn_heel=0;
-    if(frame>p.phase1_idx)
+    if(frame>=p.phase2_idx)
         if(toePos_y(sol(:,frame).')<p.toe_th)
-            Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+           Fn_toe = Fy_toe(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
             
         end
         %     [~,~,Fn_toe,Fs_toe]=toe_grf(sol(:,frame).',p);
@@ -80,9 +80,9 @@ for frame=1:size(sol,2)
             Fn_heel = Fy_heel(sol(:,frame).',dq(:,frame).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
             
         end
-    else
+    elseif(frame<=p.phase1_idx)
         Fs_heel =0;
-        Fn_toe = fy_toe(frame);
+        Fn_toe = sol(p.numJ*2+3,frame);
     end
 %     [~,~,Fn_heel,Fs_heel]=heel_grf(sol(:,frame).',p);
         

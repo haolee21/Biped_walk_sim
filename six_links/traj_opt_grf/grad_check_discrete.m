@@ -38,8 +38,17 @@ x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 % x2(p.varDim.q1*p.varDim.q2+1:end)=x1(p.varDim.q1*p.varDim.q2+1:end);
 % x2(1:p.varDim.q1*p.varDim.q2)=x1(1:p.varDim.q1*p.varDim.q2);
 
-x2(1:p.varDim.q1*p.varDim.q2) = x1(1:p.varDim.q1*p.varDim.q2);
-x2(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end) = x1(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end);
+% x2(1:p.varDim.q1*p.varDim.q2) = x1(1:p.varDim.q1*p.varDim.q2);
+% x2(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end) = x1(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+1:end);
+
+% test linearity of joint 6
+% q1 =reshape(x1(1:p.varDim.q1*p.varDim.q2),[p.varDim.q1,p.varDim.q2]);
+% q2 = reshape(x2(1:p.varDim.q1*p.varDim.q2),[p.varDim.q1,p.varDim.q2]);
+% 
+% q2(1:5,:) = q1(1:5,:);
+% q2 = reshape(q2,[p.varDim.q1*p.varDim.q2,1]);
+% x2(1:p.varDim.q1*p.varDim.q2) = q2;
+
 
 dx = x2-x1;
 p.loss_w.fy_diff=0.1;

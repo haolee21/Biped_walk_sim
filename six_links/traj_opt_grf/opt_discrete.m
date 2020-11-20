@@ -22,7 +22,7 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
 
-param.gaitT = 0.55;
+param.gaitT = 0.5;
 param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = 0.15;
@@ -30,7 +30,7 @@ param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
 param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 
 
-param.jointW = [30,60,30,30,60,30];
+param.jointW = [30,30,30,30,30,30];
 % param.jointW = [1,1,1,1,1,1];
 
 % physical param
@@ -42,40 +42,45 @@ param.foot_l = model.l_foot;
 param.dmax =1e-2;
 param.cmax_toe=10;
 param.cmax_heel=100;
-param.k=model.totM*9.81/param.dmax^2;      %2e6;
+param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
 param.us=0.8;
-param.joint_fri = 0.003;
-param.knee_stiff =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
-param.ank_stiff=408.65;
+% param.joint_fri = 0.003;
+param.joint_fri = 0.3;
+param.knee_stiff2 =76.325/10; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
+param.ank_stiff=201800*model.l_heel^2/10; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
+% param.knee_stiff2 =0;
+param.knee_stiff1=76.325/10;
+% param.knee_stiff1=0;
+% param.joint_fri = 1;
 %gait param
-param.hip_feet_ratio = 3.5/0.7143;
-param.gait_feet_ratio = 5/0.7143;
+param.hip_feet_ratio = 2.5/0.7143;
+param.gait_feet_ratio = 3.3/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.02;
-
-param.startH = 0.9*(model.l_thigh+model.l_calf);
+param.gndclear2 = -model.h_heel;
+param.startH = 0.95*(model.l_thigh+model.l_calf);
 
 q0 = returnInitPos(param);
 % force/torque bounds
-param.max_Fy = model.totM*9.81;
-param.max_Fx = model.totM*9.81;
-param.min_Fx = model.totM*9.81;
+param.max_Fy = model.totM*9.81*2;
+param.max_Fx = model.totM*9.81*2;
+param.min_Fx = model.totM*9.81*2;
 
 
-param.max_hip_tau =model.totM;
-param.min_hip_tau =model.totM;
-param.max_kne_tau =model.totM;
-param.min_kne_tau =model.totM;
-param.max_ank_tau =model.totM;
-param.min_ank_tau= 0;
+param.max_hip_tau =model.totM*3;
+param.min_hip_tau =model.totM*3;
+param.max_kne_tau =model.totM*3;
+param.min_kne_tau =model.totM*3;
+param.max_ank_tau =model.totM*3;
+param.min_ank_tau= model.totM*0.01;
 
 % weight for obj fun
-param.loss_w.u_diff = 1;
-param.loss_w.f_diff=0.1;
+param.loss_w.u_diff = 10;
+param.loss_w.f_diff=1;
 param.loss_w.eng=10;
-param.loss_w.fy_diff=0;
+param.loss_w.fy_diff=1;
 
 
 
@@ -163,7 +168,7 @@ param.varDim.fext2_2 = size(Fext2,2);
 
 % scale matrix, try to normalize all the states to make it more accurate
 param.q_scale = 1;
-param.u_scale = 1;
+param.u_scale = 10;
 param.fext_scale = 100;
 
 
@@ -194,7 +199,7 @@ param.mat_s = blkdiag(mat_s_tot{:});
 
 
 ubq = [179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -0.001*180/pi*ones(1,param.varDim.q2)/param.q_scale;
+      0*180/pi*ones(1,param.varDim.q2)/param.q_scale;
       75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
@@ -206,7 +211,7 @@ lbq = [1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
        0.001/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -135/180*pi*ones(1,param.varDim.q2)/param.q_scale];
   
-ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+ubu= [ param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
@@ -239,35 +244,18 @@ prob.lb = [reshape(lbq,[size(ubq,1)*size(ubq,2),1]);
            reshape(lbu,[size(ubu,1)*size(ubu,2),1]);
            reshape(lbfx1,[size(ubfx1,1)*size(ubfx1,2),1]);
            reshape(lbfx2,[size(ubfx2,1)*size(ubfx2,2),1])];
-
+%% reset x0
+% prob.x0 = prob.lb+randn(size(prob.x0,1),size(prob.x0,2)).*(prob.ub-prob.lb);
 
 %% Constraints
 
 % linear constraints
 
 % equality constraints
-% the A matrix is define in the following way:
-%     [x(0),x(1),x(2).......x(end)], one condition, one row
-
- 
-
-% prob.Aeq = zeros(6,size(prob.x0,1));
-% prob.Aeq(1,1)=1;
-% prob.Aeq(2,2)=1;
-% prob.Aeq(3,3)=1;
-% prob.Aeq(4,4)=1;
-% prob.Aeq(5,5)=1;
-% prob.Aeq(6,6)=1;
-% prob.beq = qStart.';                                            
+% velocity continuity, since we use discrete lagrangian, there might be a
+% discontinuity in velocity
 
 % inequality constraints
-
-% back never bend backward
-% -1*(q1+q2+q3) <-88 deg, 
-%    -q3 < -1 deg
-%  Fx<us*Fy
-% -Fx<us*Fy
-
 Asamp = zeros(2,param.numJ); % create A for single frame
 Asamp(1:2,1:3) = [-1,-1,-1;
                    1, 1, 1];
@@ -275,21 +263,35 @@ Asamp(1:2,1:3) = [-1,-1,-1;
 
 Acell = repmat({Asamp},1,param.varDim.q2);
 Aineq1=blkdiag(Acell{:});
-prob.Aineq = zeros(size(Aineq1,1),size(prob.x0,1)*size(prob.x0,2));
-prob.Aineq(:,1:param.varDim.q1*param.varDim.q2)=Aineq1;
+
+
+
+% all fx_toe in phase1 needs to be <0
+Asamp2 = [1,0];
+Acell2 = repmat({Asamp2},1,param.varDim.fext1_2);
+Aineq2 = blkdiag(Acell2{:});
+
+
+
 Bsamp = [-91/180*pi/param.q_scale;
           100/180*pi/param.q_scale];
-prob.bineq = repmat(Bsamp,param.varDim.q2,1); 
+bineq1 = repmat(Bsamp,param.varDim.q2,1);
+bineq2 = zeros(size(Aineq2,1),1);
+      
+prob.Aineq = zeros(size(Aineq1,1)+size(Aineq2,1),size(prob.x0,1)*size(prob.x0,2));
+prob.Aineq(1:size(Aineq1,1),1:param.varDim.q1*param.varDim.q2)=Aineq1;
+prob.Aineq(size(Aineq1,1)+1:size(Aineq1,1)+size(Aineq2,1),param.varDim.q1*param.varDim.q2+param.varDim.u1*param.varDim.u2+1:param.varDim.q1*param.varDim.q2+param.varDim.u1*param.varDim.u2+param.varDim.fext1_1*param.varDim.fext1_2)=Aineq2;
+prob.bineq =  [bineq1;bineq2];
 
 
 
 
 
-iterTime =500;
+iterTime =2000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
-    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'OutputFcn',@outfun);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 
@@ -322,7 +324,12 @@ param.map_A2(6,1)=-1;
 param.mapB1 = [0;0;pi;pi;0;0];
 param.mapB2 = [0;0;0;0;0;0];
 
+%%equality constraints
 
+% prob.Aeq = zeros(param.numJ,size(prob.x0,1));
+% prob.Aeq(1:param.numJ,1:param.numJ) = eye(param.numJ);
+% prob.Aeq(:,param.varDim.q1*param.varDim.q2-param.numJ+1:param.varDim.q1*param.varDim.q2) = param.map_A1;
+% prob.beq = 2*param.qStart.'-param.map_A1*param.mapB1;
 
 
 

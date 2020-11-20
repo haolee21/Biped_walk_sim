@@ -46,13 +46,13 @@ for i=1:size(x,2)-2
     tend_ank2_2 = [0,0,0,0,0,-1.3963-q2(6,1)]*p.ank_stiff;
     tend_ank2_3 = [0,0,0,0,0,-1.3963-q3(6,1)]*p.ank_stiff;
     
-    tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff;
-    tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff;
-    tend_kne1_3 = [0,-q3(2,1),0,0,0,0]*p.knee_stiff;
+    tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
+    tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;
+    tend_kne1_3 = [0,-q3(2,1),0,0,0,0]*p.knee_stiff1;
     
-    tend_kne2_1 = [0,0,0,0,-q1(5,1),0]*p.knee_stiff;
-    tend_kne2_2 = [0,0,0,0,-q2(5,1),0]*p.knee_stiff;
-    tend_kne2_3 = [0,0,0,0,-q3(5,1),0]*p.knee_stiff;
+    tend_kne2_1 = [0,0,0,0,-q1(5,1),0]*p.knee_stiff2;
+    tend_kne2_2 = [0,0,0,0,-q2(5,1),0]*p.knee_stiff2;
+    tend_kne2_3 = [0,0,0,0,-q3(5,1),0]*p.knee_stiff2;
     
     qtemp21 = (q1.'+q2.')/2;
     qtemp32 = (q2.'+q3.')/2;
@@ -139,6 +139,7 @@ for i=1:size(x,2)-2
     
     ceq((i-1)*p.numJ+1:i*p.numJ,1) = dL1+dL2+u_sum+tau_toe+tau_heel+tend_ank1+tend_ank2+tend_kne1+tend_kne2-fri_tau;
 
+
     
     %% now we solve the gradient
     
@@ -191,13 +192,13 @@ for i=1:size(x,2)-2
         gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
         gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
         % front knee
-        gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff/4;
-        gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff/2;
-        gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff/4;
+        gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;
+        gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff1/2;
+        gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff1/4;
         % back knee
-        gradceq(5,i,(i-1)*p.numJ+5) =   gradceq(5,i,(i-1)*p.numJ+5)-p.knee_stiff/4;
-        gradceq(5,i+1,(i-1)*p.numJ+5) = gradceq(5,i+1,(i-1)*p.numJ+5)-p.knee_stiff/2;
-        gradceq(5,i+2,(i-1)*p.numJ+5) = gradceq(5,i+2,(i-1)*p.numJ+5)-p.knee_stiff/4;
+        gradceq(5,i,(i-1)*p.numJ+5) =   gradceq(5,i,(i-1)*p.numJ+5)-p.knee_stiff2/4;
+        gradceq(5,i+1,(i-1)*p.numJ+5) = gradceq(5,i+1,(i-1)*p.numJ+5)-p.knee_stiff2/2;
+        gradceq(5,i+2,(i-1)*p.numJ+5) = gradceq(5,i+2,(i-1)*p.numJ+5)-p.knee_stiff2/4;
         
         
         % gradient related to u
@@ -268,8 +269,8 @@ for i=1:size(x,2)-2
         
         
         %gradient related to joint friction
-        gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ)=reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+eye(p.numJ)*p.joint_fri;
-        gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ)=reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])-eye(p.numJ)*p.joint_fri;
+        gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ)=reshape(gradceq(1:p.numJ,i,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])+eye(p.numJ)*p.joint_fri/p.sampT;
+        gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ)=reshape(gradceq(1:p.numJ,i+2,(i-1)*p.numJ+1:i*p.numJ),[p.numJ,p.numJ])-eye(p.numJ)*p.joint_fri/p.sampT;
     end
     
     

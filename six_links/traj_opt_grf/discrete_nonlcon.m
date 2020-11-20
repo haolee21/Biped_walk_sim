@@ -49,26 +49,25 @@ x = [q;u;x];
 
 %%
 [ceq1,gradceq1] = dynConst_discrete(x,p);
-% [ceq2,gradceq2] = hipCon(x1,fy_toe,p);
-% [ceq2,gradceq2] = toeCon(x,p);
+
+
 [c1,~,gradc1,~]=grf_cons_d(x,p);
 
-
-% [ceq4,gradceq4]=initYPosCons(x1,fy_toe,p);
 [ceq5,gradceq5]=ankle_push_cons(x,p);
-% [ceq5,gradceq5]=hip_vel_con(x,p);
+
 [c2,gradc2]=yposCon(x,p);
-% [c3,gradc3]=heelYposCon(x1,fy_toe,p);
+[c3,gradc3]=yposCon2(x,p);
 
 
 % c2=[];
 % gradc2=[];
 % c=c2;
 % gradc=gradc2;
-c = [c1;c2];
-gradc=[gradc1,gradc2];
-ceq=[ceq1;1000*ceq5];
-gradceq=[gradceq1,1000*gradceq5];
+c = [c1;c2;c3];
+gradc=[gradc1,gradc2,gradc3];
+ceq=[0.1*ceq1;1000*ceq5];
+
+gradceq=[0.1*gradceq1,1000*gradceq5];
 
 gradc = p.mat_s*gradc;
 gradceq=p.mat_s*gradceq;
