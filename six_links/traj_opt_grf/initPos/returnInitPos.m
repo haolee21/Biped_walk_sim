@@ -1,7 +1,7 @@
 %% without specify q1,q2,q3,q4,q5,q6 for the initial point, the model has hard time to converge
 % for here we will specify starting hip height, hip length, and gait length
 % (distance between ankle joints)
-function x=returnInitPos(p)
+function [x,exitflag]=returnInitPos(p)
 % for some reason solve() in matlab cannot return me the correct answer
 
 prob.nonlcon =@(x)initPos_nonlcon(x,p);
@@ -22,7 +22,7 @@ iterTime=1000;
 % prob.Aineq = [-1,-1,-1,0,0,0];
 % prob.bineq =-90.5/180*pi;
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
-    'Display','iter','GradObj','on','TolCon',1e-13,'SpecifyConstraintGradient',true,...
+    'GradObj','on','TolCon',1e-13,'SpecifyConstraintGradient',true,...
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 

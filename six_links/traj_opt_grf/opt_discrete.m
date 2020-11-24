@@ -30,7 +30,7 @@ param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
 param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 
 
-param.jointW = [30,30,30,30,30,30];
+param.jointW = [10,10,30,30,10,10];
 % param.jointW = [1,1,1,1,1,1];
 
 % physical param
