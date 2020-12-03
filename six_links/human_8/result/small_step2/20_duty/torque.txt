@@ -1,0 +1,41 @@
+baseline:
+hip torque: 50.0595, negative torque: 12.9848
+Knee torque: 203.2637, negative torque: 106.9834
+Ankle torque: 55.29, negative torque: 9.3477
+Total Effort: 308.6133
+
+eff Hip:
+hip torque: 159.9517, negative torque: 41.2796
+Knee torque: 184.9085, negative torque: 101.7716
+Ankle torque: 48.8449, negative torque: 9.0732
+Total Effort: 393.7051
+
+eff Knee:
+hip torque: 42.2923, negative torque: 13.5613
+Knee torque: 247.4061, negative torque: 108.9091
+Ankle torque: 41.7377, negative torque: 8.3118
+Total Effort: 331.4361
+
+eff Ankle:
+hip torque: 55.0307, negative torque: 19.7454
+Knee torque: 189.1229, negative torque: 107.6252
+Ankle torque: 65.3221, negative torque: 8.0484
+Total Effort: 309.4757
+
+eff Knee-Ankle:
+hip torque: 13.4339, negative torque: 4.452
+Knee torque: 225.891, negative torque: 120.4434
+Ankle torque: 90.5971, negative torque: 21.7119
+Total Effort: 329.922
+
+eff Hip-Ankle:
+hip torque: 115.7784, negative torque: 40.0319
+Knee torque: 178.2538, negative torque: 100.0136
+Ankle torque: 62.5388, negative torque: 4.9624
+Total Effort: 356.571
+
+eff Hip-Knee:
+hip torque: 118.9975, negative torque: 73.0767
+Knee torque: 227.6081, negative torque: 112.9738
+Ankle torque: 52.6641, negative torque: 15.1294
+Total Effort: 399.2697

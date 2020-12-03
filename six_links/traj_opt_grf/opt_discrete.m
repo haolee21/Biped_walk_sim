@@ -25,7 +25,7 @@ param.model = model;
 param.gaitT = 0.5;
 param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
-ankle_push_ratio = 0.15;
+ankle_push_ratio = 0.1;
 param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
 param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 
@@ -54,13 +54,21 @@ param.knee_stiff1=76.325/10;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param
-param.hip_feet_ratio = 2.5/0.7143;
-param.gait_feet_ratio = 3.3/0.7143;
+
+
+
+param.hip_feet_ratio = 2.2/0.7143;
+param.gait_feet_ratio = 2.2/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
-param.gndclear = -model.h_heel+0.02;
+param.gndclear = -model.h_heel+0.01;
 param.gndclear2 = -model.h_heel;
 param.startH = 0.95*(model.l_thigh+model.l_calf);
+
+% 
+% test = load('11191553').result;
+% param = test.param;
+
 
 q0 = returnInitPos(param);
 % force/torque bounds
@@ -74,7 +82,7 @@ param.min_hip_tau =model.totM*3;
 param.max_kne_tau =model.totM*3;
 param.min_kne_tau =model.totM*3;
 param.max_ank_tau =model.totM*3;
-param.min_ank_tau= model.totM*0.01;
+param.min_ank_tau= model.totM*0;
 
 % weight for obj fun
 param.loss_w.u_diff = 10;
@@ -198,20 +206,20 @@ param.mat_s = blkdiag(mat_s_tot{:});
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
 
 
-ubq = [179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      0*180/pi*ones(1,param.varDim.q2)/param.q_scale;
+ubq = [179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      0.1*180/pi*ones(1,param.varDim.q2)/param.q_scale;
       75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -60/180*pi*ones(1,param.varDim.q2)/param.q_scale];
-lbq = [1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -179/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+lbq = [0.1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
        0.001/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -135/180*pi*ones(1,param.varDim.q2)/param.q_scale];
   
-ubu= [ param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
@@ -227,7 +235,7 @@ lbu =[-param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
 ubfx1=[ param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
         param.max_Fy*ones(1,param.varDim.fext1_2)/param.fext_scale];  
 lbfx1=[-param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
-        zeros(1,param.varDim.fext1_2)/param.fext_scale];
+        -0.00001*ones(1,param.varDim.fext1_2)/param.fext_scale];
 
 ubfx2=[ param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale;
         param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];  
@@ -290,7 +298,7 @@ prob.bineq =  [bineq1;bineq2];
 iterTime =2000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
-    'Display','iter','GradObj','on','TolCon',1e-8,'SpecifyConstraintGradient',true,...
+    'Display','iter','GradObj','on','TolCon',1e-3,'SpecifyConstraintGradient',true,...
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
@@ -406,7 +414,7 @@ x(3,1:p.varDim.fext1_2) = fext1(2,:);
 x = [q;u;x];
 
 [t1,~]=clock;
-fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d')];
+fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d')];
 result.x = x;
 result.fval=fval;
 result.exitflag = exitflag;
@@ -417,4 +425,6 @@ result.set_iterTime = iterTime;
 result.model = model;
 save(['../',modelName,'/',fileName],'result');
 disp(['file name: ',modelName,'-',fileName]);
+disp(param.jointW);
+disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
 msgbox(['optimization done',num2str(exitflag)]);

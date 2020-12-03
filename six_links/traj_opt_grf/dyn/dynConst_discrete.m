@@ -31,10 +31,10 @@ for i=1:size(x,2)-2
     fy_toe2 = (x(p.numJ*2+3,i+1)+x(p.numJ*2+3,i+2))/2;
     
     qank1 = (q1(1,1)+2*q2(1,1)+q3(1,1))/4;
-    if qank1>1.3963   %pi/2, change to 80 deg since achillis tendon is extended when stand straight 
-        tend_ank1_1 = [1.3963-q1(1,1),0,0,0,0,0]*p.ank_stiff;
-        tend_ank1_2 = [1.3963-q2(1,1),0,0,0,0,0]*p.ank_stiff;
-        tend_ank1_3 = [1.3963-q3(1,1),0,0,0,0,0]*p.ank_stiff;
+    if qank1>pi/2   %pi/2, change to 80 deg since achillis tendon is extended when stand straight 
+        tend_ank1_1 = [pi/2-q1(1,1),0,0,0,0,0]*p.ank_stiff;
+        tend_ank1_2 = [pi/2-q2(1,1),0,0,0,0,0]*p.ank_stiff;
+        tend_ank1_3 = [pi/2-q3(1,1),0,0,0,0,0]*p.ank_stiff;
     else
         tend_ank1_1 = [0,0,0,0,0,0];
         tend_ank1_2 = [0,0,0,0,0,0];
@@ -42,9 +42,9 @@ for i=1:size(x,2)-2
     end
         
     
-    tend_ank2_1 = [0,0,0,0,0,-1.3963-q1(6,1)]*p.ank_stiff;
-    tend_ank2_2 = [0,0,0,0,0,-1.3963-q2(6,1)]*p.ank_stiff;
-    tend_ank2_3 = [0,0,0,0,0,-1.3963-q3(6,1)]*p.ank_stiff;
+    tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
+    tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
+    tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
     
     tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
     tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;

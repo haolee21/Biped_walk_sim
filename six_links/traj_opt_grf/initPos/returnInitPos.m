@@ -6,7 +6,7 @@ function [x,exitflag]=returnInitPos(p)
 
 prob.nonlcon =@(x)initPos_nonlcon(x,p);
 prob.objective=@(x)init_obj(x);
-prob.ub = [179/180*pi;
+prob.ub = [pi;
       -0.001/180*pi;
       75/180*pi;
       -100/180*pi;

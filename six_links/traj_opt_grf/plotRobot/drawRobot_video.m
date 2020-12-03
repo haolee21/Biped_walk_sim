@@ -34,8 +34,9 @@ fig = figure('visible','off');
 writeObject = VideoWriter(fileName);
 % writeObject.FrameRate = 1/result.param.sampT;
 writeObject.FrameRate = 10;
+writeObject.Quality=100;
 open(writeObject);
-set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96]);
+% set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.08, 1, 0.5]);
 for frame=1:size(sol,2)
     P = getRobotPos(sol(1,frame),sol(2,frame),sol(3,frame),sol(4,frame),sol(5,frame),sol(6,frame));
  
@@ -92,8 +93,8 @@ for frame=1:size(sol,2)
     
     % Heuristics:
     L = 2;  % Maximum extended leg length
-    xBnd = L*[-1.2,1.2];
-    yBnd = [-0.5*L-1,1.5*L ];
+    xBnd = L*[-1,1];
+    yBnd = [-0.1*L,1.5*L ];
     
     % Colors:
     colorGround = [118,62,12]/255;
