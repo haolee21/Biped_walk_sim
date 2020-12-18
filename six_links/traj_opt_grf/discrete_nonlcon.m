@@ -57,17 +57,14 @@ x = [q;u;x];
 
 [c2,gradc2]=yposCon(x,p);
 [c3,gradc3]=yposCon2(x,p);
+[ceq2,gradceq2]=hipVelCon(x,p);
 
 
-% c2=[];
-% gradc2=[];
-% c=c2;
-% gradc=gradc2;
 c = [c1;c2;c3];
 gradc=[gradc1,gradc2,gradc3];
-ceq=[0.1*ceq1;1000*ceq5];
+ceq=[0.1*ceq1;1000*ceq5;ceq2];
 
-gradceq=[0.1*gradceq1,1000*gradceq5];
+gradceq=[0.1*gradceq1,1000*gradceq5,gradceq2];
 
 gradc = p.mat_s*gradc;
 gradceq=p.mat_s*gradceq;

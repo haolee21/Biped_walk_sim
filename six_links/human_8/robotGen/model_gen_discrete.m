@@ -788,7 +788,7 @@ dHip_vel_xdq =[diff(hip_vel_x,qd_t(1));
                diff(hip_vel_x,qd_t(4));
                diff(hip_vel_x,qd_t(5));
                diff(hip_vel_x,qd_t(6))];
-dHip_vel_q1 =0.5*dHip_vel_xq-dHip_vel_xdq/sampT;
+dHip_vel_q1 =0.5*dHip_vel_xq-dHip_vel_xdq/sampT; %in the form q2-q1
 dHip_vel_q2 =0.5*dHip_vel_xq+dHip_vel_xdq/sampT;   
 
 tasks{1,task_i}=@()matlabFunction(hip_vel_x ,'file','grad/hip_vel_x','vars',{q_t,qd_t,sampT}); task_i=task_i+1;

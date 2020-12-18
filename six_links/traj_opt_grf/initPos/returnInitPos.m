@@ -1,27 +1,48 @@
 %% without specify q1,q2,q3,q4,q5,q6 for the initial point, the model has hard time to converge
 % for here we will specify starting hip height, hip length, and gait length
 % (distance between ankle joints)
-function [x,exitflag]=returnInitPos(p)
+function [x,exitflag]=returnInitPos(p,dir)
 % for some reason solve() in matlab cannot return me the correct answer
-
+if nargin<2
+    dir=1; % forward knee
+else
+    dir=0; % backward knee
+end
 prob.nonlcon =@(x)initPos_nonlcon(x,p);
 prob.objective=@(x)init_obj(x);
-prob.ub = [pi;
-      -0.001/180*pi;
-      75/180*pi;
-      -100/180*pi;
-      179/180*pi;
-      -60/180*pi];
-prob.lb = [1/180*pi;
-      -179/180*pi;
-      -75/180*pi;
-      -260/180*pi;
-       0.001;
-      -135/180*pi];
+
+if dir==1
+    prob.ub = [pi;
+        -0.001/180*pi;
+        75/180*pi;
+        -100/180*pi;
+        179/180*pi;
+        -60/180*pi];
+    prob.lb = [1/180*pi;
+        -179/180*pi;
+        -75/180*pi;
+        -260/180*pi;
+        0.001/180*pi;
+        -135/180*pi];
+else
+    prob.ub = [pi;
+        179.99/180*pi;
+        75/180*pi;
+        -100/180*pi;
+        -0.001/180*pi;
+        -45/180*pi];
+    prob.lb = [1/180*pi;
+        0.001/180*pi;
+        -75/180*pi;
+        -260/180*pi;
+        -179.99/180*pi;
+        -120/180*pi];
+    
+end
 iterTime=1000;
 % prob.Aineq = [-1,-1,-1,0,0,0];
 % prob.bineq =-90.5/180*pi;
-options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
+options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'GradObj','on','TolCon',1e-13,'SpecifyConstraintGradient',true,...
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 

@@ -25,10 +25,11 @@ u = [u,p.map_A2*u(:,1)-p.mapB2];
 q = [p.qStart.',q,p.map_A1*p.qStart.'-p.mapB1];
 
 %% energy consumption
-obj=obj+0.5*sum(p.jointW.*sum(u.^2,2).')*p.loss_w.eng;
-dObj_u = diag(p.jointW)*u;
-dObj_u(:,1) =dObj_u(:,1)+ p.map_A2*dObj_u(:,end);
-dObj_u = dObj_u(:,1:end-1);
+u_count = u(:,1:end-1); % we don't need to count the last u twice
+obj=obj+0.5*sum(p.jointW.*sum(u_count.^2,2).')*p.loss_w.eng;
+dObj_u = diag(p.jointW)*u_count;
+% dObj_u(:,1) =dObj_u(:,1)+ p.map_A2*dObj_u(:,end);
+% dObj_u = dObj_u(:,1:end-1);
 
 dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(dObj_u,[p.varDim.u1*p.varDim.u2,1])*p.loss_w.eng;zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
 
@@ -36,10 +37,10 @@ dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(dObj_u,[p.varDim.u1*p.va
 %% u diff constraint
 udiff = u(:,1:end-1)-u(:,2:end);
 obj = obj +0.5*sum(udiff.^2,'all')*p.loss_w.u_diff;
-grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff])*p.loss_w.u_diff;
+grad = ([udiff,zeros(p.numJ,1)]-[zeros(p.numJ,1),udiff]);
 grad(:,1) = grad(:,1)+p.map_A2*grad(:,end);
 grad = grad(:,1:end-1);
-dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(grad,[p.varDim.u1*p.varDim.u2,1])*p.loss_w.u_diff;zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
+dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(grad*p.loss_w.u_diff,[p.varDim.u1*p.varDim.u2,1]);zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
 
 %% fext diff constraint
 obj =obj+0.5*sum([fext1,fext2].^2,'all');

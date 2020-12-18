@@ -1,7 +1,7 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-clear;
-modelName='human_8';
+function result=opt_discrete(jointW,ank_push)
+modelName='human_exo1';
 
 %add share functions
 addpath dyn/
@@ -25,12 +25,18 @@ param.model = model;
 param.gaitT = 0.5;
 param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
-ankle_push_ratio = 0.1;
+ankle_push_ratio = ank_push;
 param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
 param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 
 
-param.jointW = [10,10,30,30,10,10];
+% param.jointW = [30     30    30    30     30    30];
+% param.jointW = [30     30     6     6     30    30];
+% param.jointW = [30      6    30    30      6    30];
+% param.jointW = [ 6     30    30    30     30     6];
+% param.jointW = [30     10    10    10     10    30];
+% param.jointW = [10     30    10    10     30    10];
+param.jointW = jointW;
 % param.jointW = [1,1,1,1,1,1];
 
 % physical param
@@ -57,13 +63,13 @@ param.knee_stiff1=76.325/10;
 
 
 
-param.hip_feet_ratio = 2.2/0.7143;
-param.gait_feet_ratio = 2.2/0.7143;
+param.hip_feet_ratio = 2.7/0.7143;
+param.gait_feet_ratio = 3/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.gndclear = -model.h_heel+0.01;
 param.gndclear2 = -model.h_heel;
-param.startH = 0.95*(model.l_thigh+model.l_calf);
+param.startH = 0.94*(model.l_thigh+model.l_calf);
 
 % 
 % test = load('11191553').result;
@@ -82,7 +88,7 @@ param.min_hip_tau =model.totM*3;
 param.max_kne_tau =model.totM*3;
 param.min_kne_tau =model.totM*3;
 param.max_ank_tau =model.totM*3;
-param.min_ank_tau= model.totM*0;
+param.min_ank_tau= model.totM*0.01;
 
 % weight for obj fun
 param.loss_w.u_diff = 10;
@@ -148,7 +154,7 @@ q = [linspace(qStart(1),qMid_1(1),num_1),linspace(qMid_1(1),qMid_2(1),num_2),lin
      linspace(qStart(6),qMid_1(6),num_1),linspace(qMid_1(6),qMid_2(6),num_2),linspace(qMid_2(6),qEnd(6),num_3)];
 
 
-u = [0.001*param.min_ank_tau*rand(1,size(q,2));
+u = [0*param.min_ank_tau*rand(1,size(q,2));
      0.001*param.max_hip_tau*rand(size(q,1)-2,size(q,2));
      0.001*param.min_ank_tau*rand(1,size(q,2))];
 
@@ -206,17 +212,17 @@ param.mat_s = blkdiag(mat_s_tot{:});
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
 
 
-ubq = [179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      0.1*180/pi*ones(1,param.varDim.q2)/param.q_scale;
+ubq = [180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -60/180*pi*ones(1,param.varDim.q2)/param.q_scale];
-lbq = [0.1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -179.9/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+lbq = [-0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      -180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-       0.001/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+       -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -135/180*pi*ones(1,param.varDim.q2)/param.q_scale];
   
 ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
@@ -427,4 +433,5 @@ save(['../',modelName,'/',fileName],'result');
 disp(['file name: ',modelName,'-',fileName]);
 disp(param.jointW);
 disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
-msgbox(['optimization done',num2str(exitflag)]);
+% msgbox(['optimization done',num2str(exitflag)]);
+end
