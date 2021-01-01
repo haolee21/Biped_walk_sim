@@ -1,4 +1,9 @@
-function result = singleBatch_analysis(data,video_gen)
+function result = singleBatch_analysis(data,video_gen,model)
+addpath([model,'robotGen']);
+addpath([model,'robotGen/dyn']);
+addpath([model,'robotGen/grad']);
+addpath([model,'robotGen/grf']);
+
 batchName = data.batchName;
 result.batchName = batchName;
 result.hipLen = data.baseline.param.hipLen;
@@ -217,4 +222,9 @@ result.data.sign.eff_ank = sign_n_ank;
 result.data.sign.eff_hk = sign_n_hk;
 result.data.sign.eff_ha = sign_n_ha;
 result.data.sign.eff_ka = sign_n_ka;
+
+rmpath([model,'robotGen']);
+rmpath([model,'robotGen/dyn']);
+rmpath([model,'robotGen/grad']);
+rmpath([model,'robotGen/grf']);
 end

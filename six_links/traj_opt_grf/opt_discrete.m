@@ -1,7 +1,7 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(jointW,ank_push)
-modelName='human_exo1';
+function result=opt_discrete(modelName,hipLen,toeLen,h,jointW,ank_push)
+
 
 %add share functions
 addpath dyn/
@@ -41,14 +41,15 @@ param.jointW = jointW;
 
 % physical param
 param.numJ=6;
-param.toe_th =-model.h_heel+0.01;
+param.dmax =1e-3;
+param.toe_th =-model.h_heel+param.dmax*10;
 
  %this is fix in the model parameter
 param.foot_l = model.l_foot;
-param.dmax =1e-2;
-param.cmax_toe=10;
+
+param.cmax_toe=100;
 param.cmax_heel=100;
-param.k=model.totM*9.81/param.dmax^2/2;      %2e6;
+param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
 param.joint_fri = 0.3;
@@ -63,13 +64,13 @@ param.knee_stiff1=76.325/10;
 
 
 
-param.hip_feet_ratio = 2.7/0.7143;
-param.gait_feet_ratio = 3/0.7143;
+param.hip_feet_ratio = hipLen/0.7143;
+param.gait_feet_ratio =toeLen/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
-param.gndclear = -model.h_heel+0.01;
-param.gndclear2 = -model.h_heel;
-param.startH = 0.94*(model.l_thigh+model.l_calf);
+param.gndclear = -model.h_heel+0.01; % avoid ground contact in the middle
+param.gndclear2 = -model.h_heel; % making sure the toe is always above ground
+param.startH = h*(model.l_thigh+model.l_calf);
 
 % 
 % test = load('11191553').result;
@@ -213,7 +214,7 @@ param.mat_s = blkdiag(mat_s_tot{:});
 
 
 ubq = [180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+      1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
@@ -223,7 +224,7 @@ lbq = [-0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
       -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
        -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -135/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+      -145/180*pi*ones(1,param.varDim.q2)/param.q_scale];
   
 ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
        param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
@@ -312,10 +313,7 @@ options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime
 prob.options = options;
 % prob.solver = 'patternsearch';
 prob.solver = 'fmincon';
-prob2=prob;
-% x=no_grf_traj(prob2.x0,param,model);
-% prob.x0(1:2*param.numJ,:)=x;
-% 
+
 
 % create mapping for start and end frame to reduce one constraint (linear),
 % otherwise it will easily converges to infeasible.

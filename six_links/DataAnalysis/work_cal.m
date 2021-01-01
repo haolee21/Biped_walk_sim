@@ -1,6 +1,7 @@
-function [b,bExo] = work_cal(result,result_exo,sup_eff,rec_eff)
+function [b,bExo] = work_cal(result_struct,sup_eff,rec_eff)
 %% calculate the positive work and negative work
-data = result.data;
+data = result_struct.human.data;
+result = result_struct.human;
 w_all = [sum(data.base.x_avg.^2,2),...
          sum(data.eff_hip.x_avg.^2,2),...
          sum(data.eff_kne.x_avg.^2,2),...
@@ -28,7 +29,8 @@ w_red = (w_tot-w_rec)./w_tot; % work reduce percentage
 w_red_ka = (w_tot-w_rec_ka)./w_tot;
 w_work = sum(w_all,1);
 %% data with exo weight
-dataExo = result_exo.data;
+dataExo = result_struct.exo.data;
+result_exo = result_struct.exo;
 wExo_all = [sum(dataExo.base.x_avg.^2,2),...
          sum(dataExo.eff_hip.x_avg.^2,2),...
          sum(dataExo.eff_kne.x_avg.^2,2),...
