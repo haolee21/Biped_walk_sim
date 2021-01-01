@@ -23,7 +23,7 @@ if dir==1
         -75/180*pi;
         -260/180*pi;
         0.001/180*pi;
-        -135/180*pi];
+        -145/180*pi];
 else
     prob.ub = [pi;
         179.99/180*pi;
@@ -49,7 +49,7 @@ options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFuncti
 
 prob.Aeq = [1 1 1 1 1 1;
             1,1,1,0,0,0];
-prob.beq = [-pi;
+prob.beq = [-180/180*pi;
             95/180*pi];
 prob.options = options;
 prob.solver = 'fmincon';
