@@ -41,14 +41,13 @@ param.jointW = jointW;
 
 % physical param
 param.numJ=6;
-param.dmax =1e-3;
-param.toe_th =-model.h_heel+param.dmax*10;
+param.dmax =1e-2;
 
  %this is fix in the model parameter
 param.foot_l = model.l_foot;
 
-param.cmax_toe=100;
-param.cmax_heel=100;
+param.cmax_toe=1000;
+param.cmax_heel=1000;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
@@ -64,20 +63,25 @@ param.knee_stiff1=76.325/10;
 
 
 
+
 param.hip_feet_ratio = hipLen/0.7143;
 param.gait_feet_ratio =toeLen/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
-param.gndclear = -model.h_heel+0.01; % avoid ground contact in the middle
-param.gndclear2 = -model.h_heel; % making sure the toe is always above ground
 param.startH = h*(model.l_thigh+model.l_calf);
+q0 = returnInitPos(param);
+
+
+
+
 
 % 
 % test = load('11191553').result;
 % param = test.param;
 
 
-q0 = returnInitPos(param);
+
+
 % force/torque bounds
 param.max_Fy = model.totM*9.81*2;
 param.max_Fx = model.totM*9.81*2;
@@ -135,13 +139,25 @@ q5_mid_2 = 45;
 q6_mid_2 = -90;
 qMid_2 = [q1_mid_2,q2_mid_2,q3_mid_2,q4_mid_2,q5_mid_2,q6_mid_2]*pi/180;
 
-q1_end = -q6;
+q1_end = sum(q0)+180-q6;
 q2_end = -q5;
 q3_end = -180-q4;
 q4_end = -180-q3;
 q5_end = -q2;
 q6_end = -q1;
 qEnd = [q1_end,q2_end,q3_end,q4_end,q5_end,q6_end]*pi/180;
+
+
+param.gndclear = -model.h_heel; % avoid ground contact in the middle
+% param.gndclear = heelPos_y(qEnd)+0.001;
+% param.gndclear2 = -model.h_heel; % making sure the toe is always above ground
+param.gndclear2 = heelPos_y(qEnd);
+% param.toe_th =-model.h_heel+param.dmax*10;
+param.toe_th = heelPos_y(qEnd)+0.01;
+
+
+
+
 
 num_1 = floor(length(time)/4);
 num_2 = floor((length(time)-num_1)/2);
@@ -333,7 +349,7 @@ param.map_A2(5,2)=-1;
 param.map_A2(6,1)=-1;
 
 
-param.mapB1 = [0;0;pi;pi;0;0];
+param.mapB1 = [-(sum(q0)+180)/180*pi;0;pi;pi;0;0];
 param.mapB2 = [0;0;0;0;0;0];
 
 %%equality constraints

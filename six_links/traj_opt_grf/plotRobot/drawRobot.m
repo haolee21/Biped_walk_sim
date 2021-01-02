@@ -26,6 +26,7 @@ fig = figure();
 P = getRobotPos(sol(1,1),sol(2,1),sol(3,1),sol(4,1),sol(5,1),sol(6,1));
 
 
+
 P1 = P(1:2,1);
 P2 = P(1:2,2);
 P3 = P(1:2,3);
@@ -67,7 +68,7 @@ plot(xBnd,[-p.model.h_heel,-p.model.h_heel],'LineWidth',6,'Color',colorGround);
 hold on;
 
 % Plot the links:
-plot([-p.model.l_foot,0,x(1:3)],[-p.model.h_heel,-p.model.h_heel,y(1:3)],'LineWidth',4,'Color',colorStance);
+plot([-p.model.l_foot,p.model.l_heel,x(1:3)],[-p.model.h_heel,-p.model.h_heel,y(1:3)],'LineWidth',4,'Color',colorStance);
 plot(x(3:4),y(3:4),'LineWidth',4,'Color',colorTorso);
 plot(x([3,5,6,7,8]),y([3,5,6,7,8]),'LineWidth',4,'Color',colorSwing);
 

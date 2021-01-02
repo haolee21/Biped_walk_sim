@@ -47,10 +47,12 @@ options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFuncti
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 
-prob.Aeq = [1 1 1 1 1 1;
+prob.Aeq = [0 0 0 0 0 1;
             1,1,1,0,0,0];
-prob.beq = [-180/180*pi;
+prob.beq = [-110/180*pi;
             95/180*pi];
+prob.Aineq = [1 1 1 1 1 1];
+prob.bineq = 0;
 prob.options = options;
 prob.solver = 'fmincon';
 q1 =68;

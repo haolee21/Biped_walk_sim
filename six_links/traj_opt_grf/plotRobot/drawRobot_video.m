@@ -112,7 +112,7 @@ for frame=1:size(sol,2)
     hold on;
     
     % Plot the links:
-    plot([-p.model.l_foot,0,x(1:3)],[-p.model.h_heel,-p.model.h_heel,y(1:3)],'LineWidth',4,'Color',colorStance);
+    plot([-p.model.l_foot,p.model.l_heel,x(1:3)],[-p.model.h_heel,-p.model.h_heel,y(1:3)],'LineWidth',4,'Color',colorStance);
     plot(x(3:4),y(3:4),'LineWidth',4,'Color',colorTorso);
     plot(x([3,5,6,7,8]),y([3,5,6,7,8]),'LineWidth',4,'Color',colorSwing);
     
