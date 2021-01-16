@@ -2,43 +2,46 @@
 % for here we will specify starting hip height, hip length, and gait length
 % (distance between ankle joints)
 function [x,exitflag]=returnInitPos(p,dir)
+
+%% directly solve q1,q2 with geometry
+
+
+
+
+
 % for some reason solve() in matlab cannot return me the correct answer
-if nargin<2
-    dir=1; % forward knee
-else
-    dir=0; % backward knee
-end
-prob.nonlcon =@(x)initPos_nonlcon(x,p);
-prob.objective=@(x)init_obj(x);
+
+L = p.hipLen;
+h = p.startH;
+l1 = p.model.l_calf;
+l2 = p.model.l_thigh;
+q2 = -dir*acos((L^2/4+h^2-l1^2-l2^2)/(2*l1*l2)); %q2 is always negative for forward knee
+
+mat = [-l2*sin(q2),l1+l2*cos(q2);l1+l2*cos(q2),l2*sin(q2)];
+q1_vec = mat\[L/2;h];
+q1 = atan2(q1_vec(1),q1_vec(2));
+
+% suppose torso is leaning forward
+q3 = 95/180*pi-q1-q2;
+
+
 
 if dir==1
-    prob.ub = [pi;
-        -0.001/180*pi;
-        75/180*pi;
-        -100/180*pi;
-        179/180*pi;
-        -60/180*pi];
-    prob.lb = [1/180*pi;
-        -179/180*pi;
-        -75/180*pi;
-        -260/180*pi;
-        0.001/180*pi;
-        -145/180*pi];
+    prob.ub = [ -100/180*pi;
+                 179/180*pi];
+    prob.lb = [ -260/180*pi;
+                0.001/180*pi];
+    q6 = -110/180*pi;
+
 else
-    prob.ub = [pi;
-        179.99/180*pi;
-        75/180*pi;
-        -100/180*pi;
-        -0.001/180*pi;
-        -45/180*pi];
-    prob.lb = [1/180*pi;
-        0.001/180*pi;
-        -75/180*pi;
-        -260/180*pi;
-        -179.99/180*pi;
-        -120/180*pi];
-    
+    prob.ub = [ -100/180*pi;
+                -0.001/180*pi];
+    prob.lb = [ -260/180*pi;
+                -179.99/180*pi];
+    q6 = -70/180*pi;        
 end
+prob.nonlcon =@(x)initPos_nonlcon(x,p,q1,q2,q3,q6);
+prob.objective=@(x)init_obj(x);   
 iterTime=1000;
 % prob.Aineq = [-1,-1,-1,0,0,0];
 % prob.bineq =-90.5/180*pi;
@@ -47,21 +50,19 @@ options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFuncti
     'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 
-prob.Aeq = [0 0 0 0 0 1;
-            1,1,1,0,0,0];
-prob.beq = [-110/180*pi;
-            95/180*pi];
-prob.Aineq = [1 1 1 1 1 1];
-prob.bineq = 0;
+prob.Aineq = [-1 -1];
+prob.bineq = q1+q2+q3+q6+pi;
+
+
 prob.options = options;
 prob.solver = 'fmincon';
-q1 =68;
-q2 = -1;
-q3 =90-q1-q2;
+
 q4 = -100-q1;
 q5 = 15;
-q6 = -180-q1-q2-q3-q4-q5;%+atan2d(param.heel_h,0.26);%0.26 is feet length
-prob.x0=[q1/180*pi,q2/180*pi,q3/180*pi,q4/180*pi,q5/180*pi,q6/180*pi].';
+
+prob.x0=[q4/180*pi,q5/180*pi].';
 
 [x,fval,exitflag,output] = fmincon(prob);
+
+x = [q1;q2;q3;x;q6];
 end

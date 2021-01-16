@@ -1,6 +1,12 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(modelName,hipLen,toeLen,h,jointW,ank_push)
+function result=opt_discrete(modelName,hipLen,toeLen,h,jointW,ank_push,gaitT,kneeDir)
+
+model_param = ['hipLen: ',num2str(hipLen),', toeLen:', num2str(toeLen),', h:',num2str(h), ', gaitT:',num2str(gaitT)]; 
+if nargin<8
+    kneeDir = 'forward';
+end
+
 
 
 %add share functions
@@ -22,7 +28,7 @@ addpath (['../',modelName,'/robotGen/grf/discrete'])
 model = load(['../',modelName,'/robotGen/model']).model;
 param.model = model;
 
-param.gaitT = 0.5;
+param.gaitT = gaitT;
 param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = ank_push;
@@ -69,8 +75,14 @@ param.gait_feet_ratio =toeLen/0.7143;
 param.hipLen=param.hip_feet_ratio*model.l_foot;
 param.toeLen=param.gait_feet_ratio*model.l_foot;
 param.startH = h*(model.l_thigh+model.l_calf);
-q0 = returnInitPos(param);
 
+if strcmp(kneeDir,'forward')
+    dir =1;
+    q0 = returnInitPos(param,dir);
+else
+    dir = -1;
+    q0 = returnInitPos(param,dir);
+end
 
 
 
@@ -83,16 +95,16 @@ q0 = returnInitPos(param);
 
 
 % force/torque bounds
-param.max_Fy = model.totM*9.81*2;
-param.max_Fx = model.totM*9.81*2;
-param.min_Fx = model.totM*9.81*2;
+param.max_Fy = model.totM*9.81*3;
+param.max_Fx = model.totM*9.81*3;
+param.min_Fx = model.totM*9.81*3;
 
 
-param.max_hip_tau =model.totM*3;
-param.min_hip_tau =model.totM*3;
-param.max_kne_tau =model.totM*3;
-param.min_kne_tau =model.totM*3;
-param.max_ank_tau =model.totM*3;
+param.max_hip_tau =model.totM*4;
+param.min_hip_tau =model.totM*4;
+param.max_kne_tau =model.totM*4;
+param.min_kne_tau =model.totM*4;
+param.max_ank_tau =model.totM*4;
 param.min_ank_tau= model.totM*0.01;
 
 % weight for obj fun
@@ -124,18 +136,18 @@ param.qStart = qStart;
 
 
 q1_mid_1 = 100;
-q2_mid_1 = -15;
+q2_mid_1 = dir*-15;
 q3_mid_1 = 90-q1_mid_1-q2_mid_1;
 q4_mid_1 = -220;
-q5_mid_1 = 90;
+q5_mid_1 = dir*90;
 q6_mid_1 = -90;
 qMid_1 = [q1_mid_1,q2_mid_1,q3_mid_1,q4_mid_1,q5_mid_1,q6_mid_1]*pi/180;
 
 q1_mid_2 = 100;
-q2_mid_2 = -5;
+q2_mid_2 = dir*-5;
 q3_mid_2 = 90-q1_mid_2-q2_mid_2;
 q4_mid_2 = -230;
-q5_mid_2 = 45;
+q5_mid_2 = dir*45;
 q6_mid_2 = -90;
 qMid_2 = [q1_mid_2,q2_mid_2,q3_mid_2,q4_mid_2,q5_mid_2,q6_mid_2]*pi/180;
 
@@ -227,45 +239,72 @@ param.mat_s = blkdiag(mat_s_tot{:});
 
 
 %% upper and lower limit of the variables, the algorithm will only search solutions in these regions
+if dir ==1
+    
+    ubq = [180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -60/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+    lbq = [-0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -145/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+    
+    ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+    lbu =[-param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+    
 
-
-ubq = [180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      1/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -60/180*pi*ones(1,param.varDim.q2)/param.q_scale];
-lbq = [-0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-       -0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
-      -145/180*pi*ones(1,param.varDim.q2)/param.q_scale];
-  
-ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
-       param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
-       param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
-       param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
-       param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
-       param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
-lbu =[-param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
-      -param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
-      -param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
-      -param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
-      -param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
-      -param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
-  
+else
+    ubq = [180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        180.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -100/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        0/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+    lbq = [-0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        0.01/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -75/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -260/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -180/180*pi*ones(1,param.varDim.q2)/param.q_scale;
+        -145/180*pi*ones(1,param.varDim.q2)/param.q_scale];
+    ubu= [ param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+    lbu =[-param.max_ank_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.max_hip_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.max_kne_tau*ones(1,param.varDim.u2)/param.u_scale;
+        -param.min_ank_tau*ones(1,param.varDim.u2)/param.u_scale];
+    
+    
+end
 ubfx1=[ param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
-        param.max_Fy*ones(1,param.varDim.fext1_2)/param.fext_scale];  
+    param.max_Fy*ones(1,param.varDim.fext1_2)/param.fext_scale];
 lbfx1=[-param.max_Fx*ones(1,param.varDim.fext1_2)/param.fext_scale;
-        -0.00001*ones(1,param.varDim.fext1_2)/param.fext_scale];
+    -0.00001*ones(1,param.varDim.fext1_2)/param.fext_scale];
 
 ubfx2=[ param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale;
-        param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];  
+    param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];
 lbfx2=[-param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale;
-       -param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];
-
-
+        -param.max_Fx*ones(1,param.varDim.fext2_2)/param.fext_scale];
 
 prob.ub = [reshape(ubq,[size(ubq,1)*size(ubq,2),1]);
            reshape(ubu,[size(ubu,1)*size(ubu,2),1]);
@@ -445,7 +484,11 @@ result.set_iterTime = iterTime;
 result.model = model;
 save(['../',modelName,'/',fileName],'result');
 disp(['file name: ',modelName,'-',fileName]);
+disp(model_param);
 disp(param.jointW);
 disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
+disp(['gait time: ',num2str(gaitT)]);
+disp(kneeDir);
+
 % msgbox(['optimization done',num2str(exitflag)]);
 end

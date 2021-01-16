@@ -467,6 +467,7 @@ tasks{1,task_i} =@()matlabFunction(dTau_toe_pushoff_dfy,'file','grf/dTau_toe_pus
 
 
 
+
 % % first constraint
 % % Fy is equal to the spring-damper function when slack variables s_toe,
 % % s_heel is not zero

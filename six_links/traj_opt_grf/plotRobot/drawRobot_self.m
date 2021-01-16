@@ -94,7 +94,7 @@ for frame=1:size(sol,2)
             if(off_set_q==0)
                 off_set_q=sum(sol(1:6,frame));
             end
-            f_q_adj = @(q)-sin(q)*(p.model.l_heel+p.model.l_foot)-cos(q)*p.model.h_heel-off_set+p.model.h_heel;
+            f_q_adj = @(q)-sin(q)*p.model.l_foot-cos(q)*p.model.h_heel-off_set+p.model.h_heel;
             q_adj = -sum(sol(1:6,frame))+off_set_q;
             q_adj = fzero(f_q_adj,q_adj);
         end
@@ -140,7 +140,7 @@ for frame=1:size(sol,2)
     plot(x([3,5,6,7,8]),y([3,5,6,7,8])+off_set,'LineWidth',4,'Color',colorSwing);
     
     % Plot the joints:
-    
+    scatter(toe_lat(1),toe_lat(2)+off_set,80,'k','filled');
     plot(0, 0+off_set,'k.','MarkerSize',30);
     plot(P1(1), P1(2)+off_set,'k.','MarkerSize',30);
     plot(P2(1), P2(2)+off_set,'k.','MarkerSize',30);
