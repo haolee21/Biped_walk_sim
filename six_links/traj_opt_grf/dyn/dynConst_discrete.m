@@ -107,19 +107,46 @@ for i=1:size(x,2)-2
     
     if(i>=p.phase2_idx)    
         if(toePos_y(qtemp21)<p.toe_th)
-            tau_toe_1 = Tau_toe(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%             tau_toe_1 = [Tau_toe_1(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_2(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_3(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_4(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_5(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_6(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT)];
+               tau_toe_1 = Tau_toe(qtemp21,qdiff21,fx_toe1,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+                
             tau_toe_flag1=1; 
         end
         if(toePos_y(qtemp32)<p.toe_th)
+%             tau_toe_2 = [Tau_toe_1(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_2(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_3(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_4(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_5(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%                          Tau_toe_6(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT)];
             tau_toe_2 = Tau_toe(qtemp32,qdiff32,fx_toe2,p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+                           
             tau_toe_flag2=1; 
         end
         if(i>size(x,2)/2)
             if(heelPos_y(qtemp21)<p.toe_th)
+%                 tau_heel_1 = [Tau_heel_1(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_2(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_3(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_4(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_5(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_6(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT)];
                 tau_heel_1 = Tau_heel(qtemp21,qdiff21,fx_heel1,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+                              
                 tau_heel_flag1=1; 
             end
             if(heelPos_y(qtemp32)<p.toe_th)
+%                 tau_heel_2 = [Tau_heel_1(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_2(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_3(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_4(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_5(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%                               Tau_heel_6(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT)];
                 tau_heel_2 = Tau_heel(qtemp32,qdiff32,fx_heel2,p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
                 tau_heel_flag2=1; 
             end
