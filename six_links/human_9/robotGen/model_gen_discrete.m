@@ -90,7 +90,9 @@ I_torso = [0,0,0;
            0,0,0;
            0,0,m_torso*l_torso^2*0.496^2];
 % I_torso(3,3) = m_torso*l_torso^2/12;
-I_foot = zeros(3);
+I_foot = [0,0,0;
+          0,0,0;
+          0,0,m_foot*(0.152*totH*0.475)^2];% we need to use the original foot length, not the one removed toe
 
 
 % we need extra struct to storage link length, since for the feet, we need

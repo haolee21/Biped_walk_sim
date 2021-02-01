@@ -1,8 +1,8 @@
 function grf = biped_grf(sol,p,model)
 
-addpath([model,'/robotGen']);
-addpath([model,'/robotGen/grf']);
-addpath([model,'/robotGen/dyn']);
+addpath(['../',model,'/robotGen']);
+addpath(['../',model,'/robotGen/grf']);
+addpath(['../',model,'/robotGen/dyn']);
 
 dq = (sol(1:p.numJ,2:end)-sol(1:p.numJ,1:end-1))/p.sampT;
 sol = (sol(:,1:end-1)+sol(:,2:end))/2;
@@ -39,7 +39,7 @@ for frame=1:size(sol,2)
     
    
 end
-rmpath([model,'/robotGen']);
-rmpath([model,'/robotGen/grf']);
-rmpath([model,'robotGen/dyn']);
+rmpath(['../',model,'/robotGen']);
+rmpath(['../',model,'/robotGen/grf']);
+rmpath(['../',model,'/robotGen/dyn']);
 end

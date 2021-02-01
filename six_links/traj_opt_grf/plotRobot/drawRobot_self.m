@@ -1,4 +1,7 @@
-function drawRobot_self(sol,p,grf_plot,idx)
+function drawRobot_self(sol,p,model,grf_plot,idx)
+addpath(['../',model,'/robotGen']);
+addpath(['../',model,'/robotGen/dyn']);
+addpath(['../',model,'/robotGen/grf']);
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -8,10 +11,10 @@ function drawRobot_self(sol,p,grf_plot,idx)
 %   p = parameter struct
 %
 
-if nargin <4
+if nargin <5
     idx = 0;
 end
-if nargin <3
+if nargin <4
     grf_plot=1;
 end
 
@@ -173,4 +176,8 @@ for frame=1:size(sol,2)
     axis([xBnd,yBnd]); axis equal; axis off;
     pause(0.002);
 end
+
+rmpath(['../',model,'/robotGen']);
+rmpath(['../',model,'/robotGen/dyn']);
+rmpath(['../',model,'/robotGen/grf']);
 end

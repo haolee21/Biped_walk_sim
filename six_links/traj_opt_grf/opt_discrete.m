@@ -57,12 +57,12 @@ param.cmax_heel=1000;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
-param.joint_fri = 0.3;
-param.knee_stiff2 =76.325/10; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.joint_fri = 0.003;
+param.knee_stiff2 =76.325/2; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
-param.ank_stiff=201800*model.l_heel^2/10; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
+param.ank_stiff=201800*model.l_heel^2/5; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
 % param.knee_stiff2 =0;
-param.knee_stiff1=76.325/10;
+param.knee_stiff1=76.325/2;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param
@@ -210,7 +210,7 @@ param.varDim.fext2_2 = size(Fext2,2);
 
 
 % scale matrix, try to normalize all the states to make it more accurate
-param.q_scale = 1;
+param.q_scale = 1;% we should always maintain q_scale=1 to avoid complexicity (draw and other functions use it directly)
 param.u_scale = 10;
 param.fext_scale = 100;
 

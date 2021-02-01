@@ -49,11 +49,11 @@ dObj = dObj+[zeros(p.varDim.q1*p.varDim.q2,1);zeros(p.varDim.u1*p.varDim.u2,1);r
 %% speed constraint
 diffq = q(:,1:end-1)-q(:,2:end);
 dq = diffq/p.sampT;
-obj = obj+0.5*sum(dq.^2,'all')*0.001;
+obj = obj+0.5*sum(dq.^2,'all')*0.1;
 dObj_q = ([diffq,zeros(6,1)]-[zeros(6,1),diffq])/p.sampT^2;
 dObj_q = dObj_q(:,2:end-1);
 
-dObj = dObj+[reshape(0.001*dObj_q,[p.varDim.q1*p.varDim.q2,1]);zeros(p.varDim.u1*p.varDim.u2,1);zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
+dObj = dObj+[reshape(0.1*dObj_q,[p.varDim.q1*p.varDim.q2,1]);zeros(p.varDim.u1*p.varDim.u2,1);zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
 
 
 dObj = p.mat_s*dObj;

@@ -39,7 +39,7 @@ robot.gravity=[0,9.81,0];
 
 
 %kg
-totM = 65;
+totM = 85;
 m_hand = 0.006*totM;
 m_upper_arm = 0.028*totM;
 m_fore_arm = 0.016*totM;
