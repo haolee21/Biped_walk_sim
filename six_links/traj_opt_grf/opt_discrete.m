@@ -57,12 +57,12 @@ param.cmax_heel=1000;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
-param.joint_fri = 0.003;
-param.knee_stiff2 =76.325/2; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.joint_fri = 0.03;
+param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
-param.ank_stiff=201800*model.l_heel^2/5; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
+param.ank_stiff=201800*model.l_heel^2; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
 % param.knee_stiff2 =0;
-param.knee_stiff1=76.325/2;
+param.knee_stiff1=76.325;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param
@@ -96,9 +96,9 @@ end
 
 % joint velocity, force/torque bounds
 
-param.max_hip_vel=360/180*pi/param.sampT;
-param.max_kne_vel=360/180*pi/param.sampT;
-param.max_ank_vel=360/180*pi/param.sampT;
+param.max_hip_vel=480/180*pi*param.sampT;
+param.max_kne_vel=480/180*pi*param.sampT;
+param.max_ank_vel=720/180*pi*param.sampT;
 
 
 param.max_Fy = model.totM*9.81*3;
@@ -144,8 +144,8 @@ param.qStart = qStart;
 q1_mid_1 = 100;
 q2_mid_1 = dir*-15;
 q3_mid_1 = 90-q1_mid_1-q2_mid_1;
-q4_mid_1 = -220;
-q5_mid_1 = dir*90;
+q4_mid_1 = -240;
+q5_mid_1 = dir*60;
 q6_mid_1 = -90;
 qMid_1 = [q1_mid_1,q2_mid_1,q3_mid_1,q4_mid_1,q5_mid_1,q6_mid_1]*pi/180;
 
@@ -164,7 +164,7 @@ q4_end = -180-q3;
 q5_end = -q2;
 q6_end = -q1;
 qEnd = [q1_end,q2_end,q3_end,q4_end,q5_end,q6_end]*pi/180;
-
+q0=q0/180*pi; %turn q0 back to rad since I will need to use it later
 
 param.gndclear = -model.h_heel; % avoid ground contact in the middle
 % param.gndclear = heelPos_y(qEnd)+0.001;
@@ -382,23 +382,31 @@ Asamp2 = [1,0,0,0,0,0;
           
 Acell1 = repmat({Asamp1},1,param.varDim.q2-1);
 Acell2 = repmat({Asamp2},1,param.varDim.q2-1);
+% vel constraints on first/last frame
+
+
+
 Aineq2_temp1=blkdiag(Acell1{:});
+
 Aineq2_temp2=blkdiag(Acell2{:});
+
+
 Aineq2 = [Aineq2_temp1,zeros(size(Aineq2_temp1,1),6)]+[zeros(size(Aineq2_temp1,1),6),Aineq2_temp2];
+Aineq2 = [Asamp2,zeros(size(Asamp2,1),size(Aineq2,2)-size(Asamp2,2));Aineq2;zeros(size(Asamp1,1),size(Aineq2,2)-size(Asamp1,2)),Asamp1];
 Bsamp=[param.max_ank_vel;
        param.max_kne_vel;
        param.max_hip_vel;
        param.max_hip_vel;
        param.max_kne_vel;
        param.max_ank_vel;
-       -param.max_ank_vel;
-       -param.max_kne_vel;
-       -param.max_hip_vel;
-       -param.max_hip_vel;
-       -param.max_kne_vel;
-       -param.max_ank_vel];
+       param.max_ank_vel;
+       param.max_kne_vel;
+       param.max_hip_vel;
+       param.max_hip_vel;
+       param.max_kne_vel;
+       param.max_ank_vel];
 bineq2 = repmat(Bsamp,param.varDim.q2-1,1);
-       
+bineq2 =[[Bsamp+[q0;-q0]];bineq2;[Bsamp+[-qEnd.';qEnd.']]];
 
 
 
@@ -411,7 +419,7 @@ prob.bineq =  [bineq1;bineq2;bineq3];
 
 
 
-iterTime =2000;
+iterTime =4000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-3,'SpecifyConstraintGradient',true,...
@@ -442,7 +450,7 @@ param.map_A2(5,2)=-1;
 param.map_A2(6,1)=-1;
 
 
-param.mapB1 = [-(sum(q0)+180)/180*pi;0;pi;pi;0;0];
+param.mapB1 = [-(sum(q0)+pi);0;pi;pi;0;0];
 param.mapB2 = [0;0;0;0;0;0];
 
 %%equality constraints
