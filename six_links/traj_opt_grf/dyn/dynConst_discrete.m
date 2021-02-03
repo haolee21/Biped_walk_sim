@@ -48,21 +48,21 @@ for i=1:size(x,2)-2
     
     
     
-    tend_kne1_1 = zeros(1,p.numJ);
-    tend_kne1_2 = zeros(1,p.numJ);
-    tend_kne1_3 = zeros(1,p.numJ);
-    if q1(2,1)>0
-        tend_kne1_1 = [0,q1(2,1),0,0,0,0]*p.knee_stiff1;
-    end
-    if q2(2,1)>0
-        tend_kne1_2 = [0,q2(2,1),0,0,0,0]*p.knee_stiff1;
-    end
-    if q3(2,1)>0
-        tend_kne1_3 = [0,q3(2,1),0,0,0,0]*p.knee_stiff1;
-    end
-    
-    
-    
+%     tend_kne1_1 = zeros(1,p.numJ);
+%     tend_kne1_2 = zeros(1,p.numJ);
+%     tend_kne1_3 = zeros(1,p.numJ);
+%     if q1(2,1)>0
+%         
+%     end
+%     if q2(2,1)>0
+%         
+%     end
+%     if q3(2,1)>0
+%         
+%     end
+    tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
+    tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;
+    tend_kne1_3 = [0,-q3(2,1),0,0,0,0]*p.knee_stiff1;
     
     tend_kne2_1 = [0,0,0,0,-q1(5,1),0]*p.knee_stiff2;
     tend_kne2_2 = [0,0,0,0,-q2(5,1),0]*p.knee_stiff2;

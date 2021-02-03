@@ -58,11 +58,11 @@ param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
 param.joint_fri = 0.03;
-param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.knee_stiff2 =76.325/2; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
 param.ank_stiff=201800*model.l_heel^2; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
 % param.knee_stiff2 =0;
-param.knee_stiff1=76.325;
+param.knee_stiff1=76.325/2;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param

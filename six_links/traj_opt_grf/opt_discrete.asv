@@ -58,11 +58,11 @@ param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
 param.joint_fri = 0.03;
-param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.knee_stiff2 =76.325/2; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
 param.ank_stiff=201800*model.l_heel^2; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
 % param.knee_stiff2 =0;
-param.knee_stiff1=76.325;
+param.knee_stiff1=76.325/2;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param
@@ -96,9 +96,9 @@ end
 
 % joint velocity, force/torque bounds
 
-param.max_hip_vel=360/180*pi*param.sampT;
-param.max_kne_vel=360/180*pi*param.sampT;
-param.max_ank_vel=360/180*pi*param.sampT;
+param.max_hip_vel=480/180*pi*param.sampT;
+param.max_kne_vel=480/180*pi*param.sampT;
+param.max_ank_vel=720/180*pi*param.sampT;
 
 
 param.max_Fy = model.totM*9.81*3;
@@ -383,16 +383,16 @@ Asamp2 = [1,0,0,0,0,0;
 Acell1 = repmat({Asamp1},1,param.varDim.q2-1);
 Acell2 = repmat({Asamp2},1,param.varDim.q2-1);
 % vel constraints on first/last frame
-Acell1 = [,Acell1,zeros(size(Asamp1,1),size(Asamp1,2))];
-Acell2 = [zeros(size(Asamp1,1),size(Asamp1,2)),Acell2,Asamp1];
+
 
 
 Aineq2_temp1=blkdiag(Acell1{:});
-Aineq2_temp1 = [Asamp2,zeros(size(Asamp2,1),size(Aineq2_temp1,2)-size(Asamp2,2));Aineq2_temp1];
-
 
 Aineq2_temp2=blkdiag(Acell2{:});
+
+
 Aineq2 = [Aineq2_temp1,zeros(size(Aineq2_temp1,1),6)]+[zeros(size(Aineq2_temp1,1),6),Aineq2_temp2];
+Aineq2 = [Asamp2,zeros(size(Asamp2,1),size(Aineq2,2)-size(Asamp2,2));Aineq2;zeros(size(Asamp1,1),size(Aineq2,2)-size(Asamp1,2)),Asamp1];
 Bsamp=[param.max_ank_vel;
        param.max_kne_vel;
        param.max_hip_vel;
@@ -450,7 +450,7 @@ param.map_A2(5,2)=-1;
 param.map_A2(6,1)=-1;
 
 
-param.mapB1 = [-(sum(q0)+180)/180*pi;0;pi;pi;0;0];
+param.mapB1 = [-(sum(q0)+pi);0;pi;pi;0;0];
 param.mapB2 = [0;0;0;0;0;0];
 
 %%equality constraints
