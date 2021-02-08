@@ -35,8 +35,8 @@ fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
 % Fext2(1): fx_toe, Fext2(2): fx_heel
 
 % recreate q
-q = [p.qStart.',q,p.map_A1*p.qStart.'-p.mapB1];
-u = [u,p.map_A2*u(:,1)-p.mapB2];
+q = [p.qStart.',q,p.map_A1*p.qStart.'+p.mapB1];
+u = [u,p.map_A2*u(:,1)+p.mapB2];
 
 x = zeros(3,size(q,2));
 x(1,1:p.varDim.fext1_2) = fext1(1,:);
@@ -60,8 +60,8 @@ x = [q;u;x];
 [ceq2,gradceq2]=hipVelCon(x,p);
 
 
-c = [c1;c2;c3];
-gradc=[gradc1,gradc2,gradc3];
+c = [c1;c2;10*c3];
+gradc=[gradc1,gradc2,10*gradc3];
 ceq=[0.1*ceq1;1000*ceq5;ceq2];
 
 gradceq=[0.1*gradceq1,1000*gradceq5,gradceq2];

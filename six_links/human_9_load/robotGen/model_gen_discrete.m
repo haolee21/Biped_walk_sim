@@ -47,7 +47,8 @@ m_foot = 0.0145*totM;
 m_calf =0.0465*totM;
 m_thigh = 0.1*totM;
 m_head = 0.081*totM;
-m_torso = 0.678*totM+20;
+m_trunk = 0.497*totM;
+m_torso = 0.678*totM;
 
 model.totM = (m_foot+m_calf+m_thigh)*2+m_torso; %it should be the same as totM, just in case there are some roundoff errors
 model.h_heel = h_heel;
@@ -58,7 +59,7 @@ model.l_thigh = l_thigh;
 model.m_foot = m_foot;
 model.m_calf = m_calf;
 model.m_thigh = m_thigh;
-model.m_torso = m_torso;
+model.m_torso = m_torso+20;
 model.totH = totH;
 save('model','model');
 %CoM pos
@@ -89,7 +90,9 @@ I_torso = [0,0,0;
            0,0,0;
            0,0,m_torso*l_torso^2*0.496^2];
 % I_torso(3,3) = m_torso*l_torso^2/12;
-I_foot = zeros(3);
+I_foot = [0,0,0;
+          0,0,0;
+          0,0,m_foot*(0.152*totH*0.475)^2];% we need to use the original foot length, not the one removed toe
 
 
 % we need extra struct to storage link length, since for the feet, we need
@@ -428,23 +431,8 @@ dTau_heel_dq2 = 0.5*dTau_heel_dq+dTau_heel_ddq/sampT;
 dTau_heel_dfx = diff(Tau_heel.',Fx);
 
        
-tasks{1,task_i} =@()matlabFunction(Tau_toe(1,1),'file','grf/Tau_toe_1','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(1,1),'file','grf/Tau_heel_1','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;  
-
-tasks{1,task_i} =@()matlabFunction(Tau_toe(2,1),'file','grf/Tau_toe_2','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(2,1),'file','grf/Tau_heel_2','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-
-tasks{1,task_i} =@()matlabFunction(Tau_toe(3,1),'file','grf/Tau_toe_3','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(3,1),'file','grf/Tau_heel_3','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-
-tasks{1,task_i} =@()matlabFunction(Tau_toe(4,1),'file','grf/Tau_toe_4','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(4,1),'file','grf/Tau_heel_4','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-
-tasks{1,task_i} =@()matlabFunction(Tau_toe(5,1),'file','grf/Tau_toe_5','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(5,1),'file','grf/Tau_heel_5','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;
-
-tasks{1,task_i} =@()matlabFunction(Tau_toe(6,1),'file','grf/Tau_toe_6','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
-tasks{1,task_i} =@()matlabFunction(Tau_heel(6,1),'file','grf/Tau_heel_6','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;
+tasks{1,task_i} =@()matlabFunction(Tau_toe,'file','grf/Tau_toe','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;           
+tasks{1,task_i} =@()matlabFunction(Tau_heel,'file','grf/Tau_heel','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;  
 
 tasks{1,task_i} =@()matlabFunction(dTau_toe_dq1,'file','grf/dTau_toe_dq1','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;     
 tasks{1,task_i} =@()matlabFunction(dTau_toe_dq2,'file','grf/dTau_toe_dq2','vars',{q_t,qd_t,Fx,H,k,cmax,dmax,sampT}); task_i = task_i+1;

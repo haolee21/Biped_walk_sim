@@ -3,7 +3,7 @@
 clear;
 clc;
 
-modelName='human_8';
+modelName='human_9';
 
 %add share functions
 addpath dyn/
@@ -25,8 +25,8 @@ model = load(['../',modelName,'/robotGen/model']).model;
 
 
 
-x1 = load('x_test').x;
-p = load('p_test.mat').param;
+x1 = load('xopt').xopt;
+p = load('param_test.mat').param;
 
 % p.knee_stiff =0; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 % p.ank_stiff=0;
