@@ -40,29 +40,38 @@ for i=1:size(x,2)-2
         tend_ank1_2 = [0,0,0,0,0,0];
         tend_ank1_3 = [0,0,0,0,0,0];
     end
+    qank2 = (q1(6,1)+2*q2(6,1)+q3(6,1))/4;
+    if qank2 <-pi/2
+        tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
+        tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
+        tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
+    else
+        tend_ank2_1 = [0,0,0,0,0,0];
+        tend_ank2_2 = [0,0,0,0,0,0];
+        tend_ank2_3 = [0,0,0,0,0,0];
         
-    
-    tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
-    tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
-    tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
+    end
     
     
+    tend_kne1_1 = zeros(1,p.numJ);
+    tend_kne1_2 = zeros(1,p.numJ);
+    tend_kne1_3 = zeros(1,p.numJ);
     
-%     tend_kne1_1 = zeros(1,p.numJ);
-%     tend_kne1_2 = zeros(1,p.numJ);
-%     tend_kne1_3 = zeros(1,p.numJ);
-%     if q1(2,1)>0
-%         
+%     tend_kne2_1 = zeros(1,p.numJ);
+%     tend_kne2_2 = zeros(1,p.numJ);
+%     tend_kne2_3 = zeros(1,p.numJ);
+%     if q1(2,1)>-0.0175
+%         tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
 %     end
-%     if q2(2,1)>0
-%         
+%     if q2(2,1)>-0.0175
+%         tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;
 %     end
-%     if q3(2,1)>0
-%         
+%     if q3(2,1)>-0.0175
+%         tend_kne1_3 = [0,-q3(2,1),0,0,0,0]*p.knee_stiff1;
 %     end
-    tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
-    tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;
-    tend_kne1_3 = [0,-q3(2,1),0,0,0,0]*p.knee_stiff1;
+    
+    
+    
     
     tend_kne2_1 = [0,0,0,0,-q1(5,1),0]*p.knee_stiff2;
     tend_kne2_2 = [0,0,0,0,-q2(5,1),0]*p.knee_stiff2;
@@ -229,19 +238,21 @@ for i=1:size(x,2)-2
             gradceq(1,i+2,(i-1)*p.numJ+1) = gradceq(1,i+2,(i-1)*p.numJ+1)-p.ank_stiff/4;
         end
         % back ankle
-        gradceq(6,i,i*p.numJ) = gradceq(6,i,i*p.numJ)-p.ank_stiff/4;
-        gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
-        gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
+        if qank2<-pi/2
+            gradceq(6,i,i*p.numJ) = gradceq(6,i,i*p.numJ)-p.ank_stiff/4;
+            gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
+            gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
+        end
         % front knee
-        if q1(2,1)>0
-            gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)+p.knee_stiff1/4;
-        end
-        if q2(2,1)>0
-            gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)+p.knee_stiff1/2;
-        end
-        if q3(2,1)>0
-           gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)+p.knee_stiff1/4;
-        end
+%         if q1(2,1)>-0.0175
+%             gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;
+%         end
+%         if q2(2,1)>-0.0175
+%             gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff1/2;
+%         end
+%         if q3(2,1)>-0.0175
+%            gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff1/4;
+%         end
 %         gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;
 %         gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff1/2;
 %         gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff1/4;

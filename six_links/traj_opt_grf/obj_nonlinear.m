@@ -21,8 +21,8 @@ fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
 % we need to consider the last u, since it is appearing in dyn constraints,
 % if we do not penalize it, the solver will make it too large (the benefit
 % of changing it is larger than others)
-u = [u,p.map_A2*u(:,1)-p.mapB2];
-q = [p.qStart.',q,p.map_A1*p.qStart.'-p.mapB1];
+u = [u,p.map_A2*u(:,1)+p.mapB2];
+q = [p.qStart.',q,p.map_A1*p.qStart.'+p.mapB1];
 
 %% energy consumption
 u_count = u(:,1:end-1); % we don't need to count the last u twice
