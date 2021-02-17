@@ -25,7 +25,8 @@ addpath (['../',modelName,'/robotGen/grf/'])
 addpath (['../',modelName,'/robotGen/grf/discrete'])
 
 %% simulate parameters
-model = load(['../',modelName,'/robotGen/model']).model;
+model = load(['../',modelName,'/robotGen/model']);
+model = model.model;
 param.model = model;
 
 param.gaitT = gaitT;
@@ -43,7 +44,7 @@ param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
 % param.jointW = [30     10    10    10     10    30];
 % param.jointW = [10     30    10    10     30    10];
 param.jointW = jointW;
-% param.jointW = [1,1,1,1,1,1];
+
 
 % physical param
 param.numJ=6;
@@ -58,12 +59,12 @@ param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
 param.joint_fri = 0.003;
-param.knee_stiff2 =76.325/2; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 
 param.ank_stiff=201800*model.l_heel^2; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
 % param.knee_stiff2 =0;
 % param.knee_stiff1=76.325/2;
-param.knee_stiff1=76.325*10*0;
+param.knee_stiff1=76.325;
 % param.knee_stiff1=0;
 % param.joint_fri = 1;
 %gait param
@@ -97,8 +98,8 @@ end
 
 % joint velocity, force/torque bounds
 
-param.max_hip_vel=480/180*pi*param.sampT;
-param.max_kne_vel=480/180*pi*param.sampT;
+param.max_hip_vel=360/180*pi*param.sampT;
+param.max_kne_vel=360/180*pi*param.sampT;
 param.max_ank_vel=720/180*pi*param.sampT;
 
 
@@ -420,11 +421,11 @@ prob.bineq =  [bineq1;bineq2;bineq3];
 
 
 
-iterTime =3000;
+iterTime =4000;
 
-options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunctionEvaluations',iterTime*5,...
-    'Display','iter','GradObj','on','TolCon',1e-3,'SpecifyConstraintGradient',true,...
-    'SpecifyObjectiveGradient',true,'StepTolerance',1e-15,'UseParallel',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
+    'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
+    'TolX',1e-15,'UseParallel',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 
@@ -524,8 +525,8 @@ fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
 % Fext2(1): fx_toe, Fext2(2): fx_heel
 
 % recreate q
-q = [p.qStart.',q,p.map_A1*p.qStart.'-p.mapB1];
-u = [u,p.map_A2*u(:,1)-p.mapB2];
+q = [p.qStart.',q,p.map_A1*p.qStart.'+p.mapB1];
+u = [u,p.map_A2*u(:,1)+p.mapB2];
 
 x = zeros(3,size(q,2));
 x(1,1:p.varDim.fext1_2) = fext1(1,:);

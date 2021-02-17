@@ -43,7 +43,9 @@ dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(dObj_u,[p.varDim.u1*p.va
 % dObj = dObj + [zeros(p.varDim.q1*p.varDim.q2,1);reshape(grad*p.loss_w.u_diff,[p.varDim.u1*p.varDim.u2,1]);zeros(p.varDim.fext1_1*p.varDim.fext1_2,1);zeros(p.varDim.fext2_1*p.varDim.fext2_2,1)];
 
 %% fext diff constraint
-obj =obj+0.5*sum([fext1,fext2].^2,'all');
+% obj =obj+0.5*sum([fext1,fext2].^2,'all'); %this does not work on matlab 2015
+obj =obj+0.5*sum(sum([fext1,fext2].^2)); 
+
 dObj = dObj+[zeros(p.varDim.q1*p.varDim.q2,1);zeros(p.varDim.u1*p.varDim.u2,1);reshape(fext1,[p.varDim.fext1_1*p.varDim.fext1_2,1]);reshape(fext2,[p.varDim.fext2_1*p.varDim.fext2_2,1])];
 
 %% speed constraint
