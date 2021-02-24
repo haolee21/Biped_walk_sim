@@ -49,7 +49,6 @@ for i=1:size(x,2)-2
         tend_ank2_1 = [0,0,0,0,0,0];
         tend_ank2_2 = [0,0,0,0,0,0];
         tend_ank2_3 = [0,0,0,0,0,0];
-        
     end
     
     
@@ -61,6 +60,30 @@ for i=1:size(x,2)-2
     tend_kne2_1 = [0,0,0,0,-q1(5,1),0]*p.knee_stiff2;
     tend_kne2_2 = [0,0,0,0,-q2(5,1),0]*p.knee_stiff2;
     tend_kne2_3 = [0,0,0,0,-q3(5,1),0]*p.knee_stiff2;
+    
+    qHip1 = (q1(3,1)+2*q2(3,1)+q3(3,1))/4;
+    if qHip1>0
+        tend_hip1_1 = [0,0,-q1(3,1),0,0,0]*p.hip_stiff;
+        tend_hip1_2 = [0,0,-q2(3,1),0,0,0]*p.hip_stiff;
+        tend_hip1_3 = [0,0,-q3(3,1),0,0,0]*p.hip_stiff;
+    else
+        tend_hip1_1 = zeros(1,p.numJ);
+        tend_hip1_2 = zeros(1,p.numJ);
+        tend_hip1_3 = zeros(1,p.numJ);
+    end
+    qHip2 = (q1(4,1)+2*q2(4,1)+q3(4,1))/4;
+    if qHip2<pi
+        tend_hip2_1 = [0,0,0,-pi-q1(4,1),0,0]*p.hip_stiff;
+        tend_hip2_2 = [0,0,0,-pi-q2(4,1),0,0]*p.hip_stiff;
+        tend_hip2_3 = [0,0,0,-pi-q3(4,1),0,0]*p.hip_stiff;
+        
+    else
+        tend_hip2_1 = zeros(1,p.numJ);
+        tend_hip2_2 = zeros(1,p.numJ);
+        tend_hip2_3 = zeros(1,p.numJ);
+    end
+    
+    
     
     qtemp21 = (q1.'+q2.')/2;
     qtemp32 = (q2.'+q3.')/2;
@@ -166,13 +189,16 @@ for i=1:size(x,2)-2
     tend_kne1 = (tend_kne1_1+2*tend_kne1_2+tend_kne1_3).'/4;
     tend_kne2 = (tend_kne2_1+2*tend_kne2_2+tend_kne2_3).'/4;
     
+    tend_hip1 = (tend_hip1_1+2*tend_hip1_2+tend_hip1_3).'/4;
+    tend_hip2 = (tend_hip2_1+2*tend_hip2_2+tend_hip2_3).'/4;
+    
     dq =(q3-q1)/p.sampT;
     fri_tau = p.joint_fri*eye(p.numJ)*dq; %we simplify many terms here, dq1 = (q2-q1)/sampT,  dq2 = (q3-q2)/sampT, thus, the average is (q3-q1)/2/sampT
 %     
 %     
     
     
-    ceq((i-1)*p.numJ+1:i*p.numJ,1) = dL1+dL2+u_sum+tau_toe+tau_heel+tend_ank1+tend_ank2+tend_kne1+tend_kne2-fri_tau;
+    ceq((i-1)*p.numJ+1:i*p.numJ,1) = dL1+dL2+u_sum+tau_toe+tau_heel+tend_ank1+tend_ank2+tend_kne1+tend_kne2+tend_hip1+tend_hip2-fri_tau;
 
 
     
@@ -228,16 +254,8 @@ for i=1:size(x,2)-2
             gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
             gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
         end
-        % front knee
-%         if q1(2,1)>-0.0175
-%             gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;
-%         end
-%         if q2(2,1)>-0.0175
-%             gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff1/2;
-%         end
-%         if q3(2,1)>-0.0175
-%            gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff1/4;
-%         end
+        
+        % font knee
         gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;
         gradceq(2,i+1,(i-1)*p.numJ+2) = gradceq(2,i+1,(i-1)*p.numJ+2)-p.knee_stiff1/2;
         gradceq(2,i+2,(i-1)*p.numJ+2) = gradceq(2,i+2,(i-1)*p.numJ+2)-p.knee_stiff1/4;
@@ -245,7 +263,17 @@ for i=1:size(x,2)-2
         gradceq(5,i,(i-1)*p.numJ+5) =   gradceq(5,i,(i-1)*p.numJ+5)-p.knee_stiff2/4;
         gradceq(5,i+1,(i-1)*p.numJ+5) = gradceq(5,i+1,(i-1)*p.numJ+5)-p.knee_stiff2/2;
         gradceq(5,i+2,(i-1)*p.numJ+5) = gradceq(5,i+2,(i-1)*p.numJ+5)-p.knee_stiff2/4;
-        
+        % front hip 
+        if qHip1>0
+            gradceq(3,i,(i-1)*p.numJ+3) = gradceq(3,i,(i-1)*p.numJ+3)-p.hip_stiff/4;
+            gradceq(3,i+1,(i-1)*p.numJ+3) = gradceq(3,i+1,(i-1)*p.numJ+3)-p.hip_stiff/2;
+            gradceq(3,i+2,(i-1)*p.numJ+3) = gradceq(3,i+2,(i-1)*p.numJ+3)-p.hip_stiff/4;
+        end
+        if qHip2<pi
+            gradceq(4,i,(i-1)*p.numJ+4) = gradceq(4,i,(i-1)*p.numJ+4)-p.hip_stiff/4;
+            gradceq(4,i+1,(i-1)*p.numJ+4) = gradceq(4,i+1,(i-1)*p.numJ+4)-p.hip_stiff/2;
+            gradceq(4,i+2,(i-1)*p.numJ+4) = gradceq(4,i+2,(i-1)*p.numJ+4)-p.hip_stiff/4;
+        end
         
         % gradient related to u
         gradceq(p.numJ+1:2*p.numJ,i,(i-1)*p.numJ+1:i*p.numJ) =eye(p.numJ)/4;

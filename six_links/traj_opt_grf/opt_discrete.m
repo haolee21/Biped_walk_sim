@@ -57,8 +57,8 @@ param.cmax_toe=1000;
 param.cmax_heel=1000;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
-% param.joint_fri = 0.003;
-param.joint_fri = 0.03;
+param.joint_fri = 0.003;
+% param.joint_fri = 0.03;
 
 
 % 
@@ -72,10 +72,10 @@ param.joint_fri = 0.03;
 
 % tendon parameters from "A Model of the Lower Limb for Analysis of Human
 % Movement"
-param.ank_stiff = 20/25/180*pi;
-param.knee_stiff1=70/100/180*pi;
-param.knee_stiff2=70/100/180*pi;
-
+param.ank_stiff = 20/25*180/pi;
+param.knee_stiff1=70/100*180/pi;
+param.knee_stiff2=70/100*180/pi;
+param.hip_stiff = 30/60/180*pi;
 
 param.hip_feet_ratio = hipLen/0.7143;
 param.gait_feet_ratio =toeLen/0.7143;
@@ -428,7 +428,7 @@ prob.bineq =  [bineq1;bineq2;bineq3];
 
 
 
-iterTime =8000;
+iterTime =4000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
