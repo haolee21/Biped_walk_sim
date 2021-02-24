@@ -1,4 +1,13 @@
-function fig = plot_pos(base_avg,eff_hip_avg,eff_kne_avg,eff_ank_avg,eff_hk_avg,eff_ha_avg,eff_ka_avg,time,batchName,savefig)
+function fig = plot_pos(result,time,batchName,savefig)
+
+base_avg=result.baseline.pos;
+eff_hip_avg=result.eff_hip.pos;
+eff_kne_avg=result.eff_kne.pos;
+eff_ank_avg=result.eff_ank.pos;
+eff_hk_avg=result.eff_hk.pos;
+eff_ha_avg=result.eff_ha.pos;
+eff_ka_avg=result.eff_ka.pos;
+
 fig=figure('visible','off');
 set(gcf,'Position',[233 499 1303 200]);
 subplot(1,3,3);

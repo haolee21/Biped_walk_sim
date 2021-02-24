@@ -34,152 +34,78 @@ end
 startIdx=89;
 
 %% calculate joint full torque, including tendon torque
-
-
-baseline.x(7:12,:)=biped_tor(baseline.x,baseline.param);
-eff_hip.x(7:12,:)=biped_tor(eff_hip.x,eff_hip.param);
-eff_kne.x(7:12,:)=biped_tor(eff_kne.x,eff_kne.param);
-eff_ank.x(7:12,:)=biped_tor(eff_ank.x,eff_ank.param);
-eff_hk.x(7:12,:)=biped_tor(eff_hk.x,eff_hk.param);
-eff_ha.x(7:12,:)=biped_tor(eff_ha.x,eff_ha.param);
-eff_ka.x(7:12,:)=biped_tor(eff_ka.x,eff_ka.param);
-
-
-base_hip_p = [-baseline.x(3,:),baseline.x(4,:)+pi];
-base_kne_p = [baseline.x(2,:),-baseline.x(5,:)];
-base_ank_p = [-baseline.x(1,:)+pi/2,baseline.x(6,:)+pi/2];
-base_hip_u = [-baseline.x(3+6,:),baseline.x(4+6,:)];
-base_kne_u = [baseline.x(2+6,:),-baseline.x(5+6,:)];
-base_ank_u = [-baseline.x(1+6,:),baseline.x(6+6,:)];
-base=[base_hip_p;base_kne_p;base_ank_p;base_hip_u;base_kne_u;base_ank_u];
-base = base(:,[startIdx:end,1:startIdx-1]);
-base_avg = (base(:,1:end-1)+base(:,2:end))/2;
-q_diff_base = base(1:3,2:end)-base(1:3,1:end-1);
-sign_n_base = (q_diff_base(1:3,:).*base_avg(4:6,:))<-0.001;
-neg_u_base= base_avg(4:6,:).*sign_n_base;
-result.data.base.neg_u = neg_u_base;
-result.data.base.x_avg=base_avg;
-result.data.base.x = base;
+result.baseline=torque_cal(baseline,startIdx);
+result.eff_hip = torque_cal(eff_hip,startIdx);
+result.eff_kne = torque_cal(eff_kne,startIdx);
+result.eff_ank = torque_cal(eff_ank,startIdx);
+result.eff_hk = torque_cal(eff_hk,startIdx);
+result.eff_ha = torque_cal(eff_ha,startIdx);
+result.eff_ka = torque_cal(eff_ka,startIdx);
 
 
 
-eff_hip_hip_p = [-eff_hip.x(3,:),eff_hip.x(4,:)+pi];
-eff_hip_kne_p = [eff_hip.x(2,:),-eff_hip.x(5,:)];
-eff_hip_ank_p = [-eff_hip.x(1,:)+pi/2,eff_hip.x(6,:)+pi/2];
-eff_hip_hip_u = [-eff_hip.x(3+6,:),eff_hip.x(4+6,:)];
-eff_hip_kne_u = [eff_hip.x(2+6,:),-eff_hip.x(5+6,:)];
-eff_hip_ank_u = [-eff_hip.x(1+6,:),eff_hip.x(6+6,:)];
-eff_hip = [eff_hip_hip_p;eff_hip_kne_p;eff_hip_ank_p;eff_hip_hip_u;eff_hip_kne_u;eff_hip_ank_u];
-eff_hip = eff_hip(:,[startIdx:end,1:startIdx-1]);
-eff_hip_avg = (eff_hip(:,1:end-1)+eff_hip(:,2:end))/2;
-q_diff_hip = eff_hip(1:3,2:end)-eff_hip(1:3,1:end-1);
-sign_n_hip = (q_diff_hip(1:3,:).*eff_hip_avg(4:6,:))<-0.001;
-result.data.eff_hip.neg_u = eff_hip_avg(4:6,:).*sign_n_hip;
-result.data.eff_hip.x_avg = eff_hip_avg; 
-result.data.eff_hip.x = eff_hip;
+time = linspace(0,100,size(result.baseline.pos,2));
+% time = (time_ori(1:end-1)+time_ori(2:end))/2;
 
 
 
-eff_kne_hip_p = [-eff_kne.x(3,:),eff_kne.x(4,:)+pi];
-eff_kne_kne_p = [eff_kne.x(2,:),-eff_kne.x(5,:)];
-eff_kne_ank_p = [-eff_kne.x(1,:)+pi/2,eff_kne.x(6,:)+pi/2];
-eff_kne_hip_u = [-eff_kne.x(3+6,:),eff_kne.x(4+6,:)];
-eff_kne_kne_u = [eff_kne.x(2+6,:),-eff_kne.x(5+6,:)];
-eff_kne_ank_u = [-eff_kne.x(1+6,:),eff_kne.x(6+6,:)];
-eff_kne = [eff_kne_hip_p;eff_kne_kne_p;eff_kne_ank_p;eff_kne_hip_u;eff_kne_kne_u;eff_kne_ank_u];
-eff_kne  = eff_kne(:,[startIdx:end,1:startIdx-1]);
-eff_kne_avg = (eff_kne(:,1:end-1)+eff_kne(:,2:end))/2;
-q_diff_kne = eff_kne(1:3,2:end)-eff_kne(1:3,1:end-1);
-sign_n_kne = (q_diff_kne(1:3,:).*eff_kne_avg(4:6,:))<-0.001;
-result.data.eff_kne.neg_u = eff_kne_avg(4:6,:).*sign_n_kne;
-result.data.eff_kne.x_avg = eff_kne_avg;
-result.data.eff_kne.x=eff_kne;
-
-eff_ank_hip_p = [-eff_ank.x(3,:),eff_ank.x(4,:)+pi];
-eff_ank_kne_p = [eff_ank.x(2,:),-eff_ank.x(5,:)];
-eff_ank_ank_p = [-eff_ank.x(1,:)+pi/2,eff_ank.x(6,:)+pi/2];
-eff_ank_hip_u = [-eff_ank.x(3+6,:),eff_ank.x(4+6,:)];
-eff_ank_kne_u = [eff_ank.x(2+6,:),-eff_ank.x(5+6,:)];
-eff_ank_ank_u = [-eff_ank.x(1+6,:),eff_ank.x(6+6,:)];
-eff_ank = [eff_ank_hip_p;eff_ank_kne_p;eff_ank_ank_p;eff_ank_hip_u;eff_ank_kne_u;eff_ank_ank_u];
-eff_ank = eff_ank(:,[startIdx:end,1:startIdx-1]);
-eff_ank_avg = (eff_ank(:,1:end-1)+eff_ank(:,2:end))/2;
-q_diff_ank = eff_ank(1:3,2:end)-eff_ank(1:3,1:end-1);
-sign_n_ank = (q_diff_ank(1:3,:).*eff_ank_avg(4:6,:))<-0.001;
-result.data.eff_ank.neg_u = eff_ank_avg(4:6,:).*sign_n_ank;
-result.data.eff_ank.x_avg = eff_ank_avg;
-result.data.eff_ank.x = eff_ank;
-
-
-eff_ka_hip_p = [-eff_ka.x(3,:),eff_ka.x(4,:)+pi];
-eff_ka_kne_p = [eff_ka.x(2,:),-eff_ka.x(5,:)];
-eff_ka_ank_p = [-eff_ka.x(1,:)+pi/2,eff_ka.x(6,:)+pi/2];
-eff_ka_hip_u = [-eff_ka.x(3+6,:),eff_ka.x(4+6,:)];
-eff_ka_kne_u = [eff_ka.x(2+6,:),-eff_ka.x(5+6,:)];
-eff_ka_ank_u = [-eff_ka.x(1+6,:),eff_ka.x(6+6,:)];
-eff_ka = [eff_ka_hip_p;eff_ka_kne_p;eff_ka_ank_p;eff_ka_hip_u;eff_ka_kne_u;eff_ka_ank_u];
-eff_ka = eff_ka(:,[startIdx:end,1:startIdx-1]);
-eff_ka_avg = (eff_ka(:,1:end-1)+eff_ka(:,2:end))/2;
-q_diff_ka = eff_ka(1:3,2:end)-eff_ka(1:3,1:end-1);
-sign_n_ka = (q_diff_ka(1:3,:).*eff_ka_avg(4:6,:))<-0.001;
-result.data.eff_ka.neg_u = eff_ka_avg(4:6,:).*sign_n_ka;
-result.data.eff_ka.x_avg = eff_ka_avg;
-result.data.eff_ka.x=eff_ka;
-
-eff_ha_hip_p = [-eff_ha.x(3,:),eff_ha.x(4,:)+pi];
-eff_ha_kne_p = [eff_ha.x(2,:),-eff_ha.x(5,:)];
-eff_ha_ank_p = [-eff_ha.x(1,:)+pi/2,eff_ha.x(6,:)+pi/2];
-eff_ha_hip_u = [-eff_ha.x(3+6,:),eff_ha.x(4+6,:)];
-eff_ha_kne_u = [eff_ha.x(2+6,:),-eff_ha.x(5+6,:)];
-eff_ha_ank_u = [-eff_ha.x(1+6,:),eff_ha.x(6+6,:)];
-eff_ha = [eff_ha_hip_p;eff_ha_kne_p;eff_ha_ank_p;eff_ha_hip_u;eff_ha_kne_u;eff_ha_ank_u];
-eff_ha = eff_ha(:,[startIdx:end,1:startIdx-1]);
-eff_ha_avg = (eff_ha(:,1:end-1)+eff_ha(:,2:end))/2;
-q_diff_ha = eff_ha(1:3,2:end)-eff_ha(1:3,1:end-1);
-sign_n_ha = (q_diff_ha(1:3,:).*eff_ha_avg(4:6,:))<-0.001;
-result.data.eff_ha.neg_u = eff_ha_avg(4:6,:).*sign_n_ha;
-result.data.eff_ha.x_avg = eff_ha_avg;
-result.data.eff_ha.x = eff_ha;
-
-
-eff_hk_hip_p = [-eff_hk.x(3,:),eff_hk.x(4,:)+pi];
-eff_hk_kne_p = [eff_hk.x(2,:),-eff_hk.x(5,:)];
-eff_hk_ank_p = [-eff_hk.x(1,:)+pi/2,eff_hk.x(6,:)+pi/2];
-eff_hk_hip_u = [-eff_hk.x(3+6,:),eff_hk.x(4+6,:)+pi];
-eff_hk_kne_u = [eff_hk.x(2+6,:),-eff_hk.x(5+6,:)];
-eff_hk_ank_u = [-eff_hk.x(1+6,:),eff_hk.x(6+6,:)];
-eff_hk = [eff_hk_hip_p;eff_hk_kne_p;eff_hk_ank_p;eff_hk_hip_u;eff_hk_kne_u;eff_hk_ank_u];
-eff_hk = eff_hk(:,[startIdx:end,1:startIdx-1]);
-eff_hk_avg = (eff_hk(:,2:end)+eff_hk(:,1:end-1))/2;
-q_diff_hk = eff_hk(1:3,2:end)-eff_hk(1:3,1:end-1);
-sign_n_hk = (q_diff_hk(1:3,:).*eff_hk_avg(4:6,:))<-0.001;
-result.data.eff_hk.neg_u = eff_hk_avg(4:6,:).*sign_n_hk;
-result.data.eff_hk.x_avg = eff_hk_avg;
-result.data.eff_hk.x = eff_hk;
-
-
-
-time_ori = linspace(0,100,size(base,2));
-time = (time_ori(1:end-1)+time_ori(2:end))/2;
-
-
-
-plot_pos(base_avg,eff_hip_avg,eff_kne_avg,eff_ank_avg,eff_hk_avg,eff_ha_avg,eff_ka_avg,time,batchName,1);
-result.fig.pos = @()plot_pos(base_avg,eff_hip_avg,eff_kne_avg,eff_ank_avg,eff_hk_avg,eff_ha_avg,eff_ka_avg,time,batchName,0);
+plot_pos(result,time,batchName,1);
+result.fig.pos = @()plot_pos(result,time,batchName,0);
 
 close all;
 
 result.time = time;
-result.data.sign.base = sign_n_base;
-result.data.sign.eff_hip = sign_n_hip;
-result.data.sign.eff_kne = sign_n_kne;
-result.data.sign.eff_ank = sign_n_ank;
-result.data.sign.eff_hk = sign_n_hk;
-result.data.sign.eff_ha = sign_n_ha;
-result.data.sign.eff_ka = sign_n_ka;
+
 
 rmpath([model,'robotGen']);
 rmpath([model,'robotGen/dyn']);
 rmpath([model,'robotGen/grad']);
 rmpath([model,'robotGen/grf']);
+end
+
+function data = torque_cal(data,startIdx)
+% this function will calculate the negative torque, and add position
+% offsets
+u_all = biped_tor(data.x,data.param);
+u_elastic = u_all-data.x(7:12,:);
+data.u_all = u_all;
+hip_p = [-data.x(3,:),data.x(4,:)+pi];
+kne_p = [data.x(2,:),-data.x(5,:)];
+ank_p = [-data.x(1,:)+pi/2,data.x(6,:)+pi/2];
+data.pos=[hip_p;kne_p;ank_p];
+data.pos = data.pos(:,[startIdx:end,1:startIdx-1]);
+q_diff = data.pos(:,2:end)-data.pos(:,1:end-1);
+data.pos = (data.pos(:,1:end-1)+data.pos(:,2:end))/2;
+
+
+hip_u = [-data.x(3+6,:),data.x(4+6,:)];
+kne_u = [data.x(2+6,:),-data.x(5+6,:)];
+ank_u = [-data.x(1+6,:),data.x(6+6,:)];
+data.tor_act=[hip_u;kne_u;ank_u];
+data.tor_act = data.tor_act(:,[startIdx:end,1:startIdx-1]);
+data.tor_act = (data.tor_act(:,1:end-1)+data.tor_act(:,2:end))/2;
+
+
+hip_u = [-u_all(3,:),u_all(4,:)];
+kne_u = [u_all(2,:),-u_all(5,:)];
+ank_u = [-u_all(1,:),u_all(6,:)];
+data.tor_all=[hip_u;kne_u;ank_u];
+data.tor_all = data.tor_all(:,[startIdx:end,1:startIdx-1]);
+data.tor_all = (data.tor_all(:,1:end-1)+data.tor_all(:,2:end))/2;
+
+
+
+hip_u = [-u_elastic(3,:),u_elastic(4,:)];
+kne_u = [u_elastic(2,:),-u_elastic(5,:)];
+ank_u = [-u_elastic(1,:),u_elastic(6,:)];
+data.tor_elastic=[hip_u;kne_u;ank_u];
+data.tor_elastic=data.tor_elastic(:,[startIdx:end,1:startIdx-1]);
+data.tor_elastic = (data.tor_elastic(:,1:end-1)+data.tor_elastic(:,2:end))/2;
+
+
+data.sign_n = (q_diff(:,:).*data.tor_all)<-0.1;
+
+data.neg_u_all= data.tor_all.*data.sign_n;
+data.neg_u_act = data.tor_act.*data.sign_n;
+
 end
