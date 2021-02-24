@@ -58,18 +58,23 @@ param.cmax_heel=1000;
 param.k=model.totM*9.81/param.dmax^2;      %2e6;
 param.us=0.8;
 % param.joint_fri = 0.003;
-param.joint_fri = 0.003;
-param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+param.joint_fri = 0.03;
 
-param.ank_stiff=201800*model.l_heel^2; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
-% param.knee_stiff2 =0;
-% param.knee_stiff1=76.325/2;
-param.knee_stiff1=76.325;
-% param.knee_stiff1=0;
-% param.joint_fri = 1;
+
+% 
+% param.ank_stiff=201800*model.l_heel^2/10; % from: STRUCTURAL AND MECHANICAL PROPERTIES OF THE HUMAN ACHILLES TENDON: SEX AND STRENGTH EFFECTS
+% 
+% param.knee_stiff1=76.325;
+% param.knee_stiff2 =76.325; % I use max moment (MVC/angle), since the stiffness of the paper is too high
+
 %gait param
 
 
+% tendon parameters from "A Model of the Lower Limb for Analysis of Human
+% Movement"
+param.ank_stiff = 20/25/180*pi;
+param.knee_stiff1=70/100/180*pi;
+param.knee_stiff2=70/100/180*pi;
 
 
 param.hip_feet_ratio = hipLen/0.7143;
@@ -98,14 +103,16 @@ end
 
 % joint velocity, force/torque bounds
 
-param.max_hip_vel=360/180*pi*param.sampT;
-param.max_kne_vel=360/180*pi*param.sampT;
-param.max_ank_vel=720/180*pi*param.sampT;
+% param.max_hip_vel=2*180/180*pi*param.sampT;
+% param.max_kne_vel=2*180/180*pi*param.sampT;
+% param.max_ank_vel=2*180/180*pi*param.sampT;
+param.max_hip_vel=28*param.sampT;
+param.max_kne_vel=28*param.sampT;
+param.max_ank_vel=28*param.sampT;
 
-
-param.max_Fy = model.totM*9.81*3;
-param.max_Fx = model.totM*9.81*3;
-param.min_Fx = model.totM*9.81*3;
+param.max_Fy = model.totM*9.81*5;
+param.max_Fx = model.totM*9.81*5;
+param.min_Fx = model.totM*9.81*5;
 
 
 param.max_hip_tau =model.totM*4;
@@ -421,11 +428,11 @@ prob.bineq =  [bineq1;bineq2;bineq3];
 
 
 
-iterTime =4000;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
-    'TolX',1e-15,'UseParallel',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'TolX',1e-15,'UseParallel',true,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 

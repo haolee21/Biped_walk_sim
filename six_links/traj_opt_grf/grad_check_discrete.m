@@ -51,7 +51,7 @@ x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 
 
 dx = x2-x1;
-p.loss_w.fy_diff=0.1;
+% p.loss_w.fy_diff=0.1;
 % x_s1 = x1(1:p.x1Len.x*p.x1Len.y);
 % x_s1 = reshape(x_s1,[p.x1Len.x,p.x1Len.y]);
 % fy_toe1 = x1(p.x1Len.x*p.x1Len.y+1:end);

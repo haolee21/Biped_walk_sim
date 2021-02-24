@@ -28,19 +28,22 @@ q3 = 95/180*pi-q1-q2;
 
 if dir==1
     prob.ub = [ -100/180*pi;
-                 179/180*pi];
+                 179/180*pi;
+                 -50/180*pi];
     prob.lb = [ -260/180*pi;
-                0.001/180*pi];
-    q6 = -110/180*pi;
+                0.001/180*pi;
+                 -130/180*pi];
+    
 
 else
     prob.ub = [ -100/180*pi;
-                -0.001/180*pi];
+                -0.001/180*pi;
+                -50/180*pi];
     prob.lb = [ -260/180*pi;
-                -179.99/180*pi];
-    q6 = -70/180*pi;        
+                -179.99/180*pi;
+                -130/180*pi]; 
 end
-prob.nonlcon =@(x)initPos_nonlcon(x,p,q1,q2,q3,q6);
+prob.nonlcon =@(x)initPos_nonlcon(x,p,q1,q2,q3);
 prob.objective=@(x)init_obj(x);   
 iterTime=1000;
 % prob.Aineq = [-1,-1,-1,0,0,0];
@@ -50,8 +53,8 @@ options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFunEva
     'TolX',1e-15,'UseParallel',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 
-prob.Aineq = [-1 -1];
-prob.bineq = q1+q2+q3+q6+pi;
+% prob.Aineq = [-1 -1 -1];
+% prob.bineq = q1+q2+q3+pi;
 
 
 prob.options = options;
@@ -59,10 +62,11 @@ prob.solver = 'fmincon';
 
 q4 = -100-q1;
 q5 = 15;
+q6 = -90;
 
-prob.x0=[q4/180*pi,q5/180*pi].';
+prob.x0=[q4,q5,q6].'/180*pi;
 
 [x,fval,exitflag,output] = fmincon(prob);
 
-x = [q1;q2;q3;x;q6];
+x = [q1;q2;q3;x];
 end
