@@ -1,9 +1,9 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(modelName,hipLen,toeLen,h,jointW,ank_push,gaitT,kneeDir)
+function result=opt_discrete(modelName,hipLen,h,jointW,ank_push,gaitT,kneeDir)
 
-model_param = ['hipLen: ',num2str(hipLen),', toeLen:', num2str(toeLen),', h:',num2str(h), ', gaitT:',num2str(gaitT)]; 
-if nargin<8
+model_param = ['hipLen: ',num2str(hipLen),', h:',num2str(h), ', gaitT:',num2str(gaitT)]; 
+if nargin<7
     kneeDir = 'forward';
 end
 
@@ -78,9 +78,9 @@ param.knee_stiff2=70/100*180/pi;
 param.hip_stiff = 30/60/180*pi;
 
 param.hip_feet_ratio = hipLen/0.7143;
-param.gait_feet_ratio =toeLen/0.7143;
+
 param.hipLen=param.hip_feet_ratio*model.l_foot;
-param.toeLen=param.gait_feet_ratio*model.l_foot;
+
 param.startH = h*(model.l_thigh+model.l_calf);
 
 if strcmp(kneeDir,'forward')
@@ -90,9 +90,9 @@ else
     dir = -1;
     q0 = returnInitPos(param,dir);
 end
-
-
-
+% param.gait_feet_ratio =toeLen/0.7143;
+% param.toeLen=param.gait_feet_ratio*model.l_foot;
+param.toeLen = toePos_x(q0.')*2;
 
 % 
 % test = load('11191553').result;
@@ -115,11 +115,11 @@ param.max_Fx = model.totM*9.81*5;
 param.min_Fx = model.totM*9.81*5;
 
 
-param.max_hip_tau =model.totM*4;
-param.min_hip_tau =model.totM*4;
-param.max_kne_tau =model.totM*4;
-param.min_kne_tau =model.totM*4;
-param.max_ank_tau =model.totM*4;
+param.max_hip_tau =model.totM*10;
+param.min_hip_tau =model.totM*10;
+param.max_kne_tau =model.totM*10;
+param.min_kne_tau =model.totM*10;
+param.max_ank_tau =model.totM*10;
 param.min_ank_tau= model.totM*0.01;
 
 % weight for obj fun
@@ -431,7 +431,7 @@ prob.bineq =  [bineq1;bineq2;bineq3];
 iterTime =4000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
-    'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
+    'Display','off','GradObj','on','TolCon',1e-3,'GradConstr','on',...
     'TolX',1e-15,'UseParallel',true,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
@@ -545,6 +545,7 @@ x = [q;u;x];
 
 [t1,~]=clock;
 fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d')];
+result.fileName = fileName;
 result.x = x;
 result.fval=fval;
 result.exitflag = exitflag;
@@ -554,12 +555,21 @@ result.x0=prob.x0;
 result.set_iterTime = iterTime;
 result.model = model;
 save(['../',modelName,'/',fileName],'result');
-disp(['file name: ',modelName,'-',fileName]);
-disp(model_param);
-disp(param.jointW);
-disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
-disp(['gait time: ',num2str(gaitT)]);
-disp(kneeDir);
+% disp(['file name: ',modelName,'-',fileName]);
+% disp(model_param);
+% disp(param.jointW);
+% disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
+% disp(['gait time: ',num2str(gaitT)]);
+% disp(kneeDir);
 
 % msgbox(['optimization done',num2str(exitflag)]);
+
+
+rmpath (['../',modelName,'/robotGen/'])
+rmpath (['../',modelName,'/robotGen/grad/'])
+% addpath (['../',modelName,'/robotGen/posCons/'])
+rmpath (['../',modelName,'/robotGen/dyn/'])
+% addpath (['../',modelName,'/robotGen/obj/'])
+rmpath (['../',modelName,'/robotGen/grf/'])
+rmpath (['../',modelName,'/robotGen/grf/discrete'])
 end

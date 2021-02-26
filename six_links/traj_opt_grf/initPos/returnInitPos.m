@@ -30,6 +30,7 @@ if dir==1
     prob.ub = [ -100/180*pi;
                  179/180*pi;
                  -50/180*pi];
+             
     prob.lb = [ -260/180*pi;
                 0.001/180*pi;
                  -130/180*pi];
@@ -50,7 +51,7 @@ iterTime=1000;
 % prob.bineq =-90.5/180*pi;
 options = optimoptions('fmincon','Algorithm','sqp','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
     'GradObj','on','TolCon',1e-13,'GradConstr','on',...
-    'TolX',1e-15,'UseParallel',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'TolX',1e-15,'UseParallel',true,'Display','off');%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 
 % prob.Aineq = [-1 -1 -1];
@@ -68,5 +69,8 @@ prob.x0=[q4,q5,q6].'/180*pi;
 
 [x,fval,exitflag,output] = fmincon(prob);
 
+if exitflag<0
+    disp(['Failed at hiplen=',num2str(p.hipLen)]);
+end
 x = [q1;q2;q3;x];
 end
