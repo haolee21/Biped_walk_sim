@@ -1,0 +1,87 @@
+DOCUMENTATION:
+-------------
+
+# AUTHOR: RD
+# EMAIL: hpc@ucla.edu
+# DATE: 2020MAR27
+# LAST MODIFIED: 2020MAR27
+
+*** N.B.: the "highp" and "exclusive" options are not currently available (2020MAR27) ***
+
+BEFORE YOU CAN TAKE ADVANTAGE OF THE MATLAB DISTRIBUTED COMPUTING ENGINE
+YUO WILL NEED TO OPEN AN INTERACTIVE SESSION FOR THE VERSION OF MATLAB 
+THAT YOU INTEND TO USE ISSUE AT THE HOFFMAN2 COMMAND PROMPT:
+
+qrsh -l h_data=4G -pe shared 1
+
+WHEN THE INTERACTIVE SESSION STARTS ISSUE, FOR VERSION 9.7:
+
+module load matlab/9.7
+matlab &
+
+AND AT THE MATLAB COMMAND PROMPT ISSUE:
+
+rehash toolboxcache
+configCluster
+
+CLOSE MATLAB, CD IN THE DIRECTORY WHERE YOUR MATLAB SCRIPT WITH PARALLEL
+COMMANDS (e.g., parfor) IS AND SUBMIT THE JOB WITH THE SCRIPT:
+
+./matlab_batch_parallel_job_submit.sh
+
+TO FAMILIARIZE WITH THE PROCEDURE COPY THE CONTENT OF THIS DIRECTORY IN A
+TEST DIRECTORY IN YOUR $HOME AND ISSUE:
+
+./matlab_batch_parallel_job_submit.sh -t 3 -s 20 -m 4 -v 9.7 -f myparpooltest_batch.m
+
+OR ISSUE:
+
+./matlab_batch_parallel_job_submit.sh --help
+
+TO LEARN MORE SEE BELOW:
+
+The script:
+
+	 ./matlab_batch_parallel_job_submit.sh 
+
+generates and submits a MATLAB batch job for parallel execution via the
+MATLAB Distributed Computing Toolbox.
+
+YOU WILL NEED TO HAVE HAD ALREADY RUN AT THE MATLAB PROMPT THE COMMANDS:
+
+rehash toolboxcache
+configcluser
+
+-> Do NOT include the MATLAB parpool or batch commands in your script <-
+
+This submission script generates an intermediate matlab script
+(named IDRE_XXXXX.m - where XXXXXX is a random alphanumeric sequence)
+which contains the lines:
+
+	 addpath('/YOUR/CURRENT/DIR')
+	 job=batch('matlab script name','Pool',slots)
+
+this intermediate script starts the actual MATLAB batch job submission.
+
+TO RETRIEVE INFO ON THIS JOB, LOOK IN THE joblog FOR THE MATLAB ID OF THE JOB
+(use: grep ID: job_name.joblog.JOBID | awk '{print $2}'), THEN START AN 
+INTERACTIVE MATLAB SESSION AND USE:
+
+	c=parcluster();
+	myjob=findJob(c,'ID',id_number);
+	fetchOutputs(myjob);
+	diary(myjob);
+	etc.
+
+where id_number is the integer job ID number that MATLAB 
+has assigned to the job (not the scheduler).
+
+Usage:
+ ./matlab_batch_parallel_job_submit.sh  [-t time in hours] 
+   [ -s number of processes ] [-m memory per process (in GB)]
+   [-hp to run on owned nodes] [-ex to run exclusively]
+   [-v MATLAB version] [-f matlab script (with .m extension)]  
+   [-ns (to build a submission script without submitting the job)]
+   [-nts (to not add time stamp to cmd file name)] [ --help ]
+
+

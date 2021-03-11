@@ -1,20 +1,20 @@
 function result = singleBatch_analysis(data,video_gen,model)
-addpath([model,'robotGen']);
-addpath([model,'robotGen/dyn']);
-addpath([model,'robotGen/grad']);
-addpath([model,'robotGen/grf']);
+addpath(['../',model,'/robotGen']);
+addpath(['../',model,'/robotGen/dyn']);
+addpath(['../',model,'/robotGen/grad']);
+addpath(['../',model,'/robotGen/grf']);
 addpath('../traj_opt_grf');
 
 batchName = data.batchName;
 result.batchName = batchName;
-result.hipLen = data.baseline.param.hipLen;
-baseline = data.baseline;
-eff_hip = data.eff_hip;
-eff_kne = data.eff_kne;
-eff_ank = data.eff_ank;
-eff_hk = data.eff_hk;
-eff_ha = data.eff_ha;
-eff_ka = data.eff_ka;
+result.hipLen = data.base.param.hipLen;
+baseline = data.base;
+eff_hip = data.hip;
+eff_kne = data.knee;
+eff_ank = data.ank;
+eff_hk = data.hk;
+eff_ha = data.ha;
+eff_ka = data.ka;
 
 tasks=cell(1,7);
 
@@ -34,17 +34,17 @@ end
 startIdx=89;
 
 %% calculate joint full torque, including tendon torque
-result.baseline=torque_cal(baseline,startIdx);
-result.eff_hip = torque_cal(eff_hip,startIdx);
-result.eff_kne = torque_cal(eff_kne,startIdx);
-result.eff_ank = torque_cal(eff_ank,startIdx);
-result.eff_hk = torque_cal(eff_hk,startIdx);
-result.eff_ha = torque_cal(eff_ha,startIdx);
-result.eff_ka = torque_cal(eff_ka,startIdx);
+result.base=torque_cal(baseline,startIdx);
+result.hip = torque_cal(eff_hip,startIdx);
+result.knee = torque_cal(eff_kne,startIdx);
+result.ank = torque_cal(eff_ank,startIdx);
+result.hk = torque_cal(eff_hk,startIdx);
+result.ha = torque_cal(eff_ha,startIdx);
+result.ka = torque_cal(eff_ka,startIdx);
 
 
 
-time = linspace(0,100,size(result.baseline.pos,2));
+time = linspace(0,100,size(result.base.pos,2));
 % time = (time_ori(1:end-1)+time_ori(2:end))/2;
 
 
@@ -57,10 +57,10 @@ close all;
 result.time = time;
 
 
-rmpath([model,'robotGen']);
-rmpath([model,'robotGen/dyn']);
-rmpath([model,'robotGen/grad']);
-rmpath([model,'robotGen/grf']);
+rmpath(['../',model,'/robotGen']);
+rmpath(['../',model,'/robotGen/dyn']);
+rmpath(['../',model,'/robotGen/grad']);
+rmpath(['../',model,'/robotGen/grf']);
 end
 
 function data = torque_cal(data,startIdx)

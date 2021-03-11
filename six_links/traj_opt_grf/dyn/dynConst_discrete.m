@@ -30,27 +30,48 @@ for i=1:size(x,2)-2
     fy_toe1 = (x(p.numJ*2+3,i)+x(p.numJ*2+3,i+1))/2;
     fy_toe2 = (x(p.numJ*2+3,i+1)+x(p.numJ*2+3,i+2))/2;
     
-    qank1 = (q1(1,1)+2*q2(1,1)+q3(1,1))/4;
-    if qank1>pi/2   %pi/2, change to 80 deg since achillis tendon is extended when stand straight 
+    tend_ank1_1 = [0,0,0,0,0,0];
+    tend_ank1_2 = [0,0,0,0,0,0];
+    tend_ank1_3 = [0,0,0,0,0,0];
+%     qank1 = (q1(1,1)+2*q2(1,1)+q3(1,1))/4;
+%     if qank1>pi/2 %1.3963   %pi/2, change to 80 deg since achillis tendon is extended when stand straight 
+%         tend_ank1_1 = [pi/2-q1(1,1),0,0,0,0,0]*p.ank_stiff;
+%         tend_ank1_2 = [pi/2-q2(1,1),0,0,0,0,0]*p.ank_stiff;
+%         tend_ank1_3 = [pi/2-q3(1,1),0,0,0,0,0]*p.ank_stiff;
+%         
+%     end
+    if q1(1,1)>pi/2
         tend_ank1_1 = [pi/2-q1(1,1),0,0,0,0,0]*p.ank_stiff;
-        tend_ank1_2 = [pi/2-q2(1,1),0,0,0,0,0]*p.ank_stiff;
-        tend_ank1_3 = [pi/2-q3(1,1),0,0,0,0,0]*p.ank_stiff;
-    else
-        tend_ank1_1 = [0,0,0,0,0,0];
-        tend_ank1_2 = [0,0,0,0,0,0];
-        tend_ank1_3 = [0,0,0,0,0,0];
     end
-    qank2 = (q1(6,1)+2*q2(6,1)+q3(6,1))/4;
-    if qank2 <-pi/2
-        tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
-        tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
-        tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
-    else
-        tend_ank2_1 = [0,0,0,0,0,0];
-        tend_ank2_2 = [0,0,0,0,0,0];
-        tend_ank2_3 = [0,0,0,0,0,0];
+    if q2(1,1)>pi/2
+        tend_ank1_2 = [pi/2-q2(1,1),0,0,0,0,0]*p.ank_stiff;
+    end
+    if q3(1,1)>pi/2
+        tend_ank1_3 = [pi/2-q3(1,1),0,0,0,0,0]*p.ank_stiff;
     end
     
+    
+    
+    tend_ank2_1 = [0,0,0,0,0,0];
+    tend_ank2_2 = [0,0,0,0,0,0];
+    tend_ank2_3 = [0,0,0,0,0,0];
+    
+%     qank2 = (q1(6,1)+2*q2(6,1)+q3(6,1))/4;
+%     if qank2 < -pi/2 %-1.3963
+%         tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
+%         tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
+%         tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
+%     end
+    
+    if q1(6,1)<-pi/2
+        tend_ank2_1 = [0,0,0,0,0,-pi/2-q1(6,1)]*p.ank_stiff;
+    end
+    if q2(6,1)<-pi/2
+        tend_ank2_2 = [0,0,0,0,0,-pi/2-q2(6,1)]*p.ank_stiff;
+    end
+    if q3(6,1)<-pi/2
+        tend_ank2_3 = [0,0,0,0,0,-pi/2-q3(6,1)]*p.ank_stiff;
+    end
     
     tend_kne1_1 = [0,-q1(2,1),0,0,0,0]*p.knee_stiff1;
     tend_kne1_2 = [0,-q2(2,1),0,0,0,0]*p.knee_stiff1;
@@ -242,18 +263,40 @@ for i=1:size(x,2)-2
         
         % gradient related to tendons
         % font ankle
-        if qank1>pi/2
-            
+%         if qank1>pi/2 %1.3963
+%             
+%             gradceq(1,i,(i-1)*p.numJ+1) = gradceq(1,i,(i-1)*p.numJ+1)-p.ank_stiff/4;
+%             gradceq(1,i+1,(i-1)*p.numJ+1) = gradceq(1,i+1,(i-1)*p.numJ+1)-p.ank_stiff/2;
+%             gradceq(1,i+2,(i-1)*p.numJ+1) = gradceq(1,i+2,(i-1)*p.numJ+1)-p.ank_stiff/4;
+%         end
+        
+        if q1(1,1)>pi/2
             gradceq(1,i,(i-1)*p.numJ+1) = gradceq(1,i,(i-1)*p.numJ+1)-p.ank_stiff/4;
+        end
+        if q2(1,1)>pi/2
             gradceq(1,i+1,(i-1)*p.numJ+1) = gradceq(1,i+1,(i-1)*p.numJ+1)-p.ank_stiff/2;
+        end
+        if q3(1,1)>pi/2
             gradceq(1,i+2,(i-1)*p.numJ+1) = gradceq(1,i+2,(i-1)*p.numJ+1)-p.ank_stiff/4;
         end
+        
         % back ankle
-        if qank2<-pi/2
+%         if qank2<-pi/2 %1.3963
+%             gradceq(6,i,i*p.numJ) = gradceq(6,i,i*p.numJ)-p.ank_stiff/4;
+%             gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
+%             gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
+%         end
+        
+        if q1(6,1)<-pi/2
             gradceq(6,i,i*p.numJ) = gradceq(6,i,i*p.numJ)-p.ank_stiff/4;
+        end
+        if q2(6,1)<-pi/2
             gradceq(6,i+1,i*p.numJ) = gradceq(6,i+1,i*p.numJ)-p.ank_stiff/2;
+        end
+        if q3(6,1)<-pi/2
             gradceq(6,i+2,i*p.numJ) = gradceq(6,i+2,i*p.numJ)-p.ank_stiff/4;
         end
+        
         
         % font knee
         gradceq(2,i,(i-1)*p.numJ+2) = gradceq(2,i,(i-1)*p.numJ+2)-p.knee_stiff1/4;

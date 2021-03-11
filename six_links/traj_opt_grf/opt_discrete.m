@@ -1,6 +1,11 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(modelName,hipLen,h,jointW,ank_push,gaitT,kneeDir)
+function result=opt_discrete(modelName,hipLen,h,jointW,ank_push,gaitT,kneeDir,sim_order,knee_order)
+% sim_order is added to avoid duplicacy (same model but different hipLen
+if(nargin<8)
+    sim_order=0;
+    knee_order=0;
+end
 
 model_param = ['hipLen: ',num2str(hipLen),', h:',num2str(h), ', gaitT:',num2str(gaitT)]; 
 if nargin<7
@@ -334,6 +339,30 @@ prob.lb = [reshape(lbq,[size(ubq,1)*size(ubq,2),1]);
 
 %% Constraints
 
+
+% create mapping for start and end frame to reduce one constraint (linear),
+% otherwise it will easily converges to infeasible.
+param.map_A1 = zeros(param.numJ);
+param.map_A1(1,6)=-1;
+param.map_A1(2,5)=-1;
+param.map_A1(3,4)=-1;
+param.map_A1(4,3)=-1;
+param.map_A1(5,2)=-1;
+param.map_A1(6,1)=-1;
+param.map_A2 = zeros(param.numJ); 
+param.map_A2(1,6)=-1;
+param.map_A2(2,5)=-1;
+param.map_A2(3,4)=-1;
+param.map_A2(4,3)=-1;
+param.map_A2(5,2)=-1;
+param.map_A2(6,1)=-1;
+
+
+param.mapB1 = [sum(q0)+pi;0;-pi;-pi;0;0];
+param.mapB2 = [0;0;0;0;0;0];
+
+
+
 % linear constraints
 
 % equality constraints
@@ -391,7 +420,7 @@ Asamp2 = [1,0,0,0,0,0;
           
 Acell1 = repmat({Asamp1},1,param.varDim.q2-1);
 Acell2 = repmat({Asamp2},1,param.varDim.q2-1);
-% vel constraints on first/last frame
+% vel constraints on first/last frame, since they are constant 
 
 
 
@@ -419,20 +448,40 @@ bineq2 =[[Bsamp+[q0;-q0]];bineq2;[Bsamp+[-qEnd.';qEnd.']]];
 
 
 
+% velocity continuity
+v_lim = 3/180*pi; %q(2)-q(1) and q(n)-q(n-1) should only differ less than 1 deg (after correct mapping)
+Aineq4 = zeros(param.numJ*2,size(prob.x0,1));
+% q(2) - A q(n-1) <=v_lim+2q(1)+Ab
+% Aq(n-1) - q(2) <=v_lim-2q(1)-Ab
+Aineq4(1:6,1:6)=eye(6);
+Aineq4(1:6,param.varDim.q1*param.varDim.q2-param.numJ+1:param.varDim.q1*param.varDim.q2)=param.map_A1;
+Aineq4(7:12,1:6)=-eye(6);
+Aineq4(7:12,param.varDim.q1*param.varDim.q2-param.numJ+1:param.varDim.q1*param.varDim.q2)=-param.map_A1;
+
+bineq4 = [ones(6,1)*v_lim+2*param.qStart.'+param.map_A1*param.mapB1;
+          ones(6,1)*v_lim-2*param.qStart.'-param.map_A1*param.mapB1];
+
+
+
+
+
+
+
 prob.Aineq = zeros(size(Aineq1,1)+size(Aineq2,1)+size(Aineq3,1),size(prob.x0,1)*size(prob.x0,2));
 prob.Aineq(1:size(Aineq1,1)+size(Aineq2,1),1:param.varDim.q1*param.varDim.q2)=[Aineq1;Aineq2];
 prob.Aineq(size(Aineq1,1)+size(Aineq2,1)+1:size(Aineq1,1)+size(Aineq2,1)+size(Aineq3,1),param.varDim.q1*param.varDim.q2+param.varDim.u1*param.varDim.u2+1:param.varDim.q1*param.varDim.q2+param.varDim.u1*param.varDim.u2+param.varDim.fext1_1*param.varDim.fext1_2)=Aineq3;
 prob.bineq =  [bineq1;bineq2;bineq3];
 
+prob.Aineq = [prob.Aineq;Aineq4];
+prob.bineq = [prob.bineq;bineq4];
 
 
 
-
-iterTime =4000;
+iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
     'Display','off','GradObj','on','TolCon',1e-3,'GradConstr','on',...
-    'TolX',1e-15,'UseParallel',true,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'TolX',1e-15,'UseParallel',false,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 
@@ -441,26 +490,7 @@ prob.options = options;
 prob.solver = 'fmincon';
 
 
-% create mapping for start and end frame to reduce one constraint (linear),
-% otherwise it will easily converges to infeasible.
-param.map_A1 = zeros(param.numJ);
-param.map_A1(1,6)=-1;
-param.map_A1(2,5)=-1;
-param.map_A1(3,4)=-1;
-param.map_A1(4,3)=-1;
-param.map_A1(5,2)=-1;
-param.map_A1(6,1)=-1;
-param.map_A2 = zeros(param.numJ); 
-param.map_A2(1,6)=-1;
-param.map_A2(2,5)=-1;
-param.map_A2(3,4)=-1;
-param.map_A2(4,3)=-1;
-param.map_A2(5,2)=-1;
-param.map_A2(6,1)=-1;
 
-
-param.mapB1 = [sum(q0)+pi;0;-pi;-pi;0;0];
-param.mapB2 = [0;0;0;0;0;0];
 
 %%equality constraints
 
@@ -477,20 +507,30 @@ param.mapB2 = [0;0;0;0;0;0];
 prob.x0 = param.mat_s\prob.x0;
 prob.nonlcon=@(x)discrete_nonlcon(x,param);
 prob.objective=@(x)obj_nonlinear(x,param);
-% 
-% 
-% x0_1=m*x(:,end)-[0;0;pi;pi;0;0;0;0;0;0;0;0];
-% prob.x0(1:2*param.numJ,:)=[x0_1,x];
 
 
-% for i=1:7
-
-%use random number for x0 
-% prob.x0 = diag(rand(size(prob.ub,1),1))*(prob.ub-prob.lb)+prob.lb;
-
-% for i=1:3
-
-[x,fval,exitflag,output] = fmincon(prob);
+max_iter = 0;
+cur_violate = 100000;
+while (max_iter<3)
+    [temp_x,temp_fval,temp_exitflag,temp_output] = fmincon(prob);
+    if(temp_output.constrviolation<0.05)
+        max_iter=5;
+        x = temp_x;
+        fval = temp_fval;
+        exitflag = temp_exitflag;
+        output = temp_output;
+    else
+        max_iter = max_iter+1;
+        if(temp_output.constrviolation<cur_violate)
+            x = temp_x;
+            fval = temp_fval;
+            exitflag = temp_exitflag;
+            output = temp_output;
+            cur_violate = temp_output.constrviolation;
+        end
+    end
+    
+end
 % 
 %     prob.x0=fwd_dyn(x,param);
 % end
@@ -543,8 +583,35 @@ x(3,1:p.varDim.fext1_2) = fext1(2,:);
 
 x = [q;u;x];
 
+% incase two files with the same name is created
+if sum(jointW== [30,30,30,30,30,30])==6
+    name_dup=0;
+elseif sum(jointW==[30,30,6,6,30,30])==6
+    name_dup=1;
+elseif sum(jointW==[30,6,30,30,6,30])==6
+    name_dup=2;
+elseif sum(jointW==[6,30,30,30,30,6])==6
+    name_dup=3; 
+elseif sum(jointW==[30,10,10,10,10,30])==6
+    name_dup=4;
+elseif sum(jointW==[10,30,10,10,30,10])==6
+    name_dup=5;
+elseif sum(jointW==[10,10,30,30,10,10])==6
+    name_dup=6;
+else
+    name_dup=7;
+end
+
+
+
+
+
+
+
 [t1,~]=clock;
-fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d')];
+fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d'),num2str(sim_order,'%02d'),num2str(name_dup),num2str(knee_order)];
+    
+
 result.fileName = fileName;
 result.x = x;
 result.fval=fval;
