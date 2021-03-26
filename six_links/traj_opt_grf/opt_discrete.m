@@ -449,7 +449,7 @@ bineq2 =[[Bsamp+[q0;-q0]];bineq2;[Bsamp+[-qEnd.';qEnd.']]];
 
 
 % velocity continuity
-v_lim = 3/180*pi; %q(2)-q(1) and q(n)-q(n-1) should only differ less than 1 deg (after correct mapping)
+v_lim = 3/180*pi; %q(2)-q(1) and q(n)-q(n-1) should only differ less than 3 deg (after correct mapping)
 Aineq4 = zeros(param.numJ*2,size(prob.x0,1));
 % q(2) - A q(n-1) <=v_lim+2q(1)+Ab
 % Aq(n-1) - q(2) <=v_lim-2q(1)-Ab
@@ -480,7 +480,7 @@ prob.bineq = [prob.bineq;bineq4];
 iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
-    'Display','off','GradObj','on','TolCon',1e-3,'GradConstr','on',...
+    'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
     'TolX',1e-15,'UseParallel',false,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);

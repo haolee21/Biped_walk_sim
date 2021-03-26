@@ -1,0 +1,68 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+                  R2019b (9.7.0.1190202) 64-bit (glnxa64)
+                              August 21, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+ans = 
+
+  AdditionalProperties with properties:
+
+    AdditionalSubmitArgs: ''
+            EmailAddress: 'haolee@mail'
+             EnableDebug: 0
+                GpuNodes: 0
+                 GpuType: ''
+                MemUsage: '8G'
+            ProcsPerNode: 0
+               QueueName: ''
+                 UseSmpd: 0
+                WallTime: '12:00:00'
+
+
+additionalSubmitArgs =
+
+    '-pe matlab 51 -l h_rt=12:00:00 -l h_data=8G -M haolee@mail -m abes'
+
+
+job = 
+
+ Job
+
+    Properties: 
+
+                   ID: 10
+                 Type: pool
+             Username: haolee
+                State: queued
+       SubmitDateTime: 07-Mar-2021 16:42:19
+        StartDateTime: 
+     Running Duration: 0 days 0h 0m 0s
+      NumWorkersRange: [51 51]
+           NumThreads: 1
+
+      AutoAttachFiles: true
+  Auto Attached Files: /u/home/h/haolee/walk_sim/traj_opt_grf/batch_sim3.m
+                       /u/home/h/haolee/walk_sim/traj_opt_grf/batch_sim_single.m
+                       /u/home/h/haolee/walk_sim/traj_opt_grf/discrete_nonlcon.m
+                       /u/home/h/haolee/walk_sim/traj_opt_grf/obj_nonlinear.m
+                       /u/home/h/haolee/walk_sim/traj_opt_grf/opt_discrete.m
+        AttachedFiles: {}
+    AutoAddClientPath: true
+      AdditionalPaths: /u/home/h/haolee/walk_sim/traj_opt_grf
+ EnvironmentVariables: {}
+
+    Associated Tasks: 
+
+       Number Pending: 51
+       Number Running: 0
+      Number Finished: 0
+    Task ID of Errors: []
+  Task ID of Warnings: []
+   Task Scheduler IDs: 6777576
+

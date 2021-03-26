@@ -1,0 +1,57 @@
+
+Job 6777575 started on:   n7406
+Job 6777575 started on:   Sun Mar 7 16:42:27 PST 2021
+
+Currently Loaded Modulefiles:
+  1) ATS                     3) matlab/9.7
+  2) intel/18.0.4(default)
+ 
+Number of slots for this run is 1
+Number of slots that will be requested by MATLAB's batch job is 51
+ 
+Now running...
+ 
+matlab -nodisplay -nosplash -r IDRE_Yd4n4Lf1 -logfile batch_sim7.output.6777575
+ 
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+                  R2019b (9.7.0.1190202) 64-bit (glnxa64)
+                              August 21, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+ans = 
+
+  AdditionalProperties with properties:
+
+    AdditionalSubmitArgs: ''
+            EmailAddress: 'haolee@mail'
+             EnableDebug: 0
+                GpuNodes: 0
+                 GpuType: ''
+                MemUsage: '8G'
+            ProcsPerNode: 0
+               QueueName: ''
+                 UseSmpd: 0
+                WallTime: '12:00:00'
+
+{Error using parallel.Cluster/batch (line 158)
+Could not open file
+"/u/home/h/haolee/MdcsDataLocation/hoffman2/R2019b/local/Job13.in.mat", the
+error returned was: Unable to read MAT-file
+/u/home/h/haolee/MdcsDataLocation/hoffman2/R2019b/local/Job13.in.mat. File
+might be corrupt..
+
+Error in IDRE_Yd4n4Lf1 (line 8)
+job=batch(c,'batch_sim7','Pool',50)
+} 
+ 
+... done
+ 
+
+Job 6777575 terminated on: Sun Mar 7 16:42:51 PST 2021
+

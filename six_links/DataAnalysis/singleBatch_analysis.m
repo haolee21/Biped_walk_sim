@@ -31,7 +31,7 @@ if(video_gen)
     end
 end
 
-startIdx=89;
+startIdx=95;
 
 %% calculate joint full torque, including tendon torque
 result.base=torque_cal(baseline,startIdx);
@@ -74,7 +74,8 @@ kne_p = [data.x(2,:),-data.x(5,:)];
 ank_p = [-data.x(1,:)+pi/2,data.x(6,:)+pi/2];
 data.pos=[hip_p;kne_p;ank_p];
 data.pos = data.pos(:,[startIdx:end,1:startIdx-1]);
-q_diff = data.pos(:,2:end)-data.pos(:,1:end-1);
+data.q_diff = data.pos(:,2:end)-data.pos(:,1:end-1);
+
 data.pos = (data.pos(:,1:end-1)+data.pos(:,2:end))/2;
 
 
@@ -85,6 +86,7 @@ data.tor_act=[hip_u;kne_u;ank_u];
 data.tor_act = data.tor_act(:,[startIdx:end,1:startIdx-1]);
 data.tor_act = (data.tor_act(:,1:end-1)+data.tor_act(:,2:end))/2;
 
+data.power_act = data.q_diff.*data.tor_act/data.param.sampT;
 
 hip_u = [-u_all(3,:),u_all(4,:)];
 kne_u = [u_all(2,:),-u_all(5,:)];
@@ -92,7 +94,7 @@ ank_u = [-u_all(1,:),u_all(6,:)];
 data.tor_all=[hip_u;kne_u;ank_u];
 data.tor_all = data.tor_all(:,[startIdx:end,1:startIdx-1]);
 data.tor_all = (data.tor_all(:,1:end-1)+data.tor_all(:,2:end))/2;
-
+data.power_all = data.q_diff.*data.tor_all/data.param.sampT;
 
 
 hip_u = [-u_elastic(3,:),u_elastic(4,:)];
@@ -103,7 +105,7 @@ data.tor_elastic=data.tor_elastic(:,[startIdx:end,1:startIdx-1]);
 data.tor_elastic = (data.tor_elastic(:,1:end-1)+data.tor_elastic(:,2:end))/2;
 
 
-data.sign_n = (q_diff(:,:).*data.tor_all)<-0.1;
+data.sign_n = (data.q_diff(:,:).*data.tor_all)<-0.1;
 
 data.neg_u_all= data.tor_all.*data.sign_n;
 data.neg_u_act = data.tor_act.*data.sign_n;
