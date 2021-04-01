@@ -7,5 +7,5 @@
 *.csv
 *.mlx
 *.asv
-./six_links/Batch_sim_results
-./six_links/DataAnalysis
+six_links/Batch_sim_results
+six_links/DataAnalysis

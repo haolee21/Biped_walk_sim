@@ -1,1 +1,0 @@
-gait period: 0.55
