@@ -639,4 +639,5 @@ rmpath (['../',modelName,'/robotGen/dyn/'])
 % addpath (['../',modelName,'/robotGen/obj/'])
 rmpath (['../',modelName,'/robotGen/grf/'])
 rmpath (['../',modelName,'/robotGen/grf/discrete'])
+clear;
 end
