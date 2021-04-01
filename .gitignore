@@ -5,3 +5,7 @@
 *.fig
 *.xlsx
 *.csv
+*.mlx
+*.asv
+./six_links/Batch_sim_results
+./six_links/DataAnalysis
