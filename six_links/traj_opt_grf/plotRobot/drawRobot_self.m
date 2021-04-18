@@ -1,7 +1,8 @@
 function drawRobot_self(sol,p,model,grf_plot,idx)
-addpath(['../',model,'/robotGen']);
+addpath(['../',model,'/robotGen/pos']);
 addpath(['../',model,'/robotGen/dyn']);
 addpath(['../',model,'/robotGen/grf']);
+addpath(['../',model,'/robotGen/graph']);
 % drawRobot(q,p)
 %
 % This function draws the robot with configuration q and parameters p
@@ -132,7 +133,7 @@ for frame=1:size(sol,2)
     % Plot the ground:
     plot(xBnd,[-p.model.h_heel,-p.model.h_heel],'LineWidth',6,'Color',colorGround);
     
-    hold on;
+   	
     
     % Plot the links:
     toe_lat = [cos(q_adj),sin(q_adj);-sin(q_adj),cos(q_adj)]*[-p.model.l_foot;-p.model.h_heel];
@@ -177,7 +178,10 @@ for frame=1:size(sol,2)
     pause(0.002);
 end
 
-rmpath(['../',model,'/robotGen']);
+
+
+rmpath(['../',model,'/robotGen/pos']);
 rmpath(['../',model,'/robotGen/dyn']);
 rmpath(['../',model,'/robotGen/grf']);
+rmpath(['../',model,'/robotGen/graph']);
 end
