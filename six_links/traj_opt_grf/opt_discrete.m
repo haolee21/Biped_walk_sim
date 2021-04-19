@@ -1,6 +1,6 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(modelName,hipLen,h,jointW,ank_push,gaitT,kneeDir,sim_order,knee_order)
+function result=opt_discrete(modelName,modelType,hipLen,h,jointW,ank_push,gaitT,kneeDir,sim_order,knee_order)
 % sim_order is added to avoid duplicacy (same model but different hipLen
 if(nargin<8)
     sim_order=0;
@@ -13,24 +13,15 @@ if nargin<7
 end
 
 
-
 %add share functions
-addpath dyn/
-addpath obj/
-addpath gaitCon/
-addpath plotRobot/
-addpath forward_dyn
-addpath initPos/
-addpath (['../',modelName,'/robotGen/'])
-addpath (['../',modelName,'/robotGen/grad/'])
-% addpath (['../',modelName,'/robotGen/posCons/'])
-addpath (['../',modelName,'/robotGen/dyn/'])
-% addpath (['../',modelName,'/robotGen/obj/'])
-addpath (['../',modelName,'/robotGen/grf/'])
-addpath (['../',modelName,'/robotGen/grf/discrete'])
-
+addpath('initPos');
+addpath('dyn');
+addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
+addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+addpath (['../',modelName,'/',modelType,'/robotGen/grf'])
+addpath (['../',modelName,'/',modelType,'/robotGen/pos'])
 %% simulate parameters
-model = load(['../',modelName,'/robotGen/model']);
+model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
 model = model.model;
 param.model = model;
 
@@ -97,7 +88,7 @@ else
 end
 % param.gait_feet_ratio =toeLen/0.7143;
 % param.toeLen=param.gait_feet_ratio*model.l_foot;
-param.toeLen = toePos_x(q0.')*2;
+param.toeLen = ToePos_x(q0.')*2;
 
 % 
 % test = load('11191553').result;
@@ -183,9 +174,9 @@ q0=q0/180*pi; %turn q0 back to rad since I will need to use it later
 param.gndclear = -model.h_heel; % avoid ground contact in the middle
 % param.gndclear = heelPos_y(qEnd)+0.001;
 % param.gndclear2 = -model.h_heel; % making sure the toe is always above ground
-param.gndclear2 = heelPos_y(qEnd);
+param.gndclear2 = HeelPos_y(qEnd);
 % param.toe_th =-model.h_heel+param.dmax*10;
-param.toe_th = heelPos_y(qEnd)+0.01;
+param.toe_th = HeelPos_y(qEnd)+0.01;
 
 
 
@@ -609,7 +600,7 @@ end
 
 
 [t1,~]=clock;
-fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d'),num2str(sim_order,'%02d'),num2str(name_dup),num2str(knee_order)];
+fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d'),num2str(name_dup)];
     
 
 result.fileName = fileName;
@@ -621,7 +612,7 @@ result.param = param;
 result.x0=prob.x0;
 result.set_iterTime = iterTime;
 result.model = model;
-save(['../',modelName,'/',fileName],'result');
+save(['../',modelName,'/',modelType,'/',fileName],'result');
 % disp(['file name: ',modelName,'-',fileName]);
 % disp(model_param);
 % disp(param.jointW);
@@ -632,12 +623,9 @@ save(['../',modelName,'/',fileName],'result');
 % msgbox(['optimization done',num2str(exitflag)]);
 
 
-rmpath (['../',modelName,'/robotGen/'])
-rmpath (['../',modelName,'/robotGen/grad/'])
-% addpath (['../',modelName,'/robotGen/posCons/'])
-rmpath (['../',modelName,'/robotGen/dyn/'])
-% addpath (['../',modelName,'/robotGen/obj/'])
-rmpath (['../',modelName,'/robotGen/grf/'])
-rmpath (['../',modelName,'/robotGen/grf/discrete'])
-clear;
+rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
+rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+rmpath (['../',modelName,'/',modelType,'/robotGen/grf'])
+rmpath (['../',modelName,'/',modelType,'/robotGen/pos'])
+
 end

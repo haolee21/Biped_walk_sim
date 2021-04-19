@@ -18,8 +18,7 @@ for i=1:p.phase1_idx-1 %the first frame is fixed
         ceq_grad1(1:p.numJ,i+1,i)=dToePos_y(q).';
         ceq_grad2(1:p.numJ,i+1,i)=dToePos_x(q).';
     end
-%     ceq2(i,1)=heelPos_x(x1)-p.toeLen/2;
-%     ceq_grad2(1:p.numJ,i,i)=ceq_grad2(1:p.numJ,i,i)+dHeelPos_x(x1); 
+
 end
 ceq = [ceq1;ceq2];
 ceq_grad = cat(3,ceq_grad1,ceq_grad2);

@@ -2,8 +2,8 @@ function [c,ceq,gradc,gradceq]=initPos_nonlcon(x,p,q1,q2,q3)
 
 x = [q1;q2;q3;x];
 
-ceq3 = toePos_y(x.')+p.model.h_heel;
-ceq5 = heelPos_y(x.')+p.model.h_heel-0.01;
+ceq3 = ToePos_y(x.')+p.model.h_heel;
+ceq5 = HeelPos_y(x.')+p.model.h_heel-0.01;
 
 gradceq3 = dToePos_y(x.');
 gradceq5 = dHeelPos_y(x.');

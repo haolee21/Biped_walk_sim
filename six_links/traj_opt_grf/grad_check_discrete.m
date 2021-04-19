@@ -3,7 +3,9 @@
 clear;
 clc;
 
-modelName='human_9';
+modelName='human_11';
+modelType = 'human_exo_load1';
+kneeDir='forward';
 
 %add share functions
 addpath dyn/
@@ -12,16 +14,13 @@ addpath gaitCon/
 addpath plotRobot/
 addpath forward_dyn
 
-addpath (['../',modelName,'/robotGen/'])
-addpath (['../',modelName,'/robotGen/grad/'])
-% addpath (['../',modelName,'/robotGen/posCons/'])
-addpath (['../',modelName,'/robotGen/dyn/'])
-% addpath (['../',modelName,'/robotGen/obj/'])
-addpath (['../',modelName,'/robotGen/grf/'])
-addpath (['../',modelName,'/robotGen/grf/discrete'])
+addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
+addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+addpath (['../',modelName,'/',modelType,'/robotGen/grf'])
+addpath (['../',modelName,'/',modelType,'/robotGen/pos'])
 
 %% simulate parameters
-model = load(['../',modelName,'/robotGen/model']).model;
+model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
 
 
 
@@ -89,4 +88,40 @@ err_ceq_vec = err_ceq./(ceq2-ceq1);
 err = obj2-obj1-0.5*(dObj1.'+dObj2.')*dx;
 disp(['nonlinear obj= ',num2str(norm(err)/norm(obj2-obj1))]);
 
+
+%% gradient check for individual nonlinear constraints
+x_mat1 = state2mat(x1,p);
+x_mat2 = state2mat(x2,p);
+
+[ceq1,gradceq1]=dynConst_discrete(x_mat1,p);
+[ceq2,gradceq2]=dynConst_discrete(x_mat2,p);
+err_ceq = ceq2-ceq1-0.5*(gradceq1.'+gradceq2.')*dx;
+disp(['dynConst ceq_err= ',num2str(norm(err_ceq)/norm(ceq1-ceq2))]); 
+
+
+[c1,~,gradc1,~]=grf_cons_d(x_mat1,p);
+[c2,~,gradc2,~]=grf_cons_d(x_mat2,p);
+err_c = c2-c1-0.5*(gradc1.'+gradc2.')*dx;
+disp(['grf con c err= ',num2str(norm(err_c)/norm(c2-c1))]);
+
+
+[ceq1,gradceq1]=ankle_push_cons(x_mat1,p);
+[ceq2,gradceq2]=ankle_push_cons(x_mat2,p);
+err_ceq = ceq2-ceq1-0.5*(gradceq1.'+gradceq2.')*dx;
+disp(['ankle_push con ceq_err= ',num2str(norm(err_ceq)/norm(ceq1-ceq2))]); 
+
+[c1,gradc1]=yposCon(x_mat1,p);
+[c2,gradc2]=yposCon(x_mat2,p);
+err_c = c2-c1-0.5*(gradc1.'+gradc2.')*dx;
+disp(['yposCon c = ',num2str(norm(err_c)/norm(c2-c1))]);
+
+[c1,gradc1]=yposCon2(x_mat1,p);
+[c2,gradc2]=yposCon2(x_mat2,p);
+err_c = c2-c1-0.5*(gradc1.'+gradc2.')*dx;
+disp(['yposCon2 c = ',num2str(norm(err_c)/norm(c2-c1))]);
+
+[ceq1,gradceq1]=hipVelCon(x_mat1,p);
+[ceq2,gradceq2]=hipVelCon(x_mat2,p);
+err_ceq = ceq2-ceq1-0.5*(gradceq1.'+gradceq2.')*dx;
+disp(['hipVelCon ceq_err= ',num2str(norm(err_ceq)/norm(ceq1-ceq2))]); 
 

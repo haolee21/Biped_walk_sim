@@ -1,8 +1,8 @@
-function [c,ceq,gradc,gradceq] = discrete_nonlcon(x,p)
+function state_mat = state2mat(x,p)
 % scale x back
 x = p.mat_s*x;
 
-%% add the last column
+% add the last column
 q = x(1:p.varDim.q1*p.varDim.q2);
 q = reshape(q,[p.varDim.q1,p.varDim.q2]);
 x = x(p.varDim.q1*p.varDim.q2+1:end);
@@ -18,7 +18,7 @@ x = x(p.varDim.fext1_1*p.varDim.fext1_2+1:end);
 fext2 = x(1:p.varDim.fext2_1*p.varDim.fext2_2);
 fext2 = reshape(fext2,[p.varDim.fext2_1,p.varDim.fext2_2]);
 
-%% reconstruct the array, pad zeros to make it more continuous when calculating gradient
+% reconstruct the array, pad zeros to make it more continuous when calculating gradient
 % the structure of x is
 % [ q;
 %   u;
@@ -43,30 +43,7 @@ x(1,end-p.varDim.fext2_2+1:end) = fext2(1,:);
 x(2,end-p.varDim.fext2_2+1:end) = fext2(2,:);
 x(3,1:p.varDim.fext1_2) = fext1(2,:);
 
-x = [q;u;x];
-
-
-%%
-[ceq1,gradceq1] = dynConst_discrete(x,p);
-
-
-[c1,~,gradc1,~]=grf_cons_d(x,p);
-
-[ceq5,gradceq5]=ankle_push_cons(x,p);
-
-[c2,gradc2]=yposCon(x,p);
-[c3,gradc3]=yposCon2(x,p);
-[ceq2,gradceq2]=hipVelCon(x,p);
-
-
-c = [c1;c2;10*c3];
-gradc=[gradc1,gradc2,10*gradc3];
-ceq=[0.1*ceq1;1000*ceq5;ceq2];
-
-gradceq=[0.1*gradceq1,1000*gradceq5,gradceq2];
-
-gradc = p.mat_s*gradc;
-gradceq=p.mat_s*gradceq;
+state_mat = [q;u;x];
 
 
 end
