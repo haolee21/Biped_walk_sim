@@ -1,4 +1,4 @@
-function Human_Exo_main(modelName,modelType,extra_load,totH,totM)
+function Human_Exo_main(modelName,modelType,extra_load,exo_enable,totH,totM,gen_grf)
 % I use function since we need to use a few subfunctions
 %% Generate robot with discrete Lagrangian
 % the dynamics of forward/backward knee
@@ -46,10 +46,15 @@ m_head = 0.081*totM;
 %m_trunk = 0.497*totM;
 m_torso = 0.678*totM+extra_load; % the mass of load is directly added on the torso
 
-
-m_exo_calf = 1.7;
-m_exo_thigh=1.7;
-m_exo_foot = 0.8;
+if exo_enable==1
+    m_exo_calf = 1.7;
+    m_exo_thigh=1.7;
+    m_exo_foot = 0.8;
+else
+    m_exo_calf=0;
+    m_exo_thigh=0;
+    m_exo_foot=0;
+end
 
 
 model.totM = (m_foot+m_calf+m_thigh)*2+m_torso; %it should be the same as totM, just in case there are some roundoff errors
@@ -63,7 +68,7 @@ model.m_calf = m_calf;
 model.m_thigh = m_thigh;
 model.m_torso = m_torso;
 model.totH = totH;
-save('model',['../',modelName,'/',modelType,'/robotGen/model']);
+save(['../',modelName,'/',modelType,'/robotGen/model.mat'],'model');
 
 %CoM pos
 lc_thigh2_h = 0.433*l_thigh;
@@ -179,6 +184,11 @@ tasks2 = Gen_dL_dq(dL1_F,dL2_F,q,dq,sampT,modelName,modelType,'forward');
 tasks3 = Gen_dL_dq(dL1_B,dL2_B,q,dq,sampT,modelName,modelType,'backward');
 
 
+
+%% 
+if gen_grf==1
+
+
 %% position data
 % l=[l_calf,l_thigh,l_torso,l_thigh,l_calf,l_foot,-l_heel; % when calculating dynamics, only the first 5 will be used, so don't worry about the last 2
 %         0,      0,      0,      0,     0,h_heel, h_heel;
@@ -241,11 +251,11 @@ com_hb = [calf_front_hb,thigh_front_hb,torso_hb,thigh_back_hb,calf_back_hb,foot_
 
 com_e = [calf_front_e,thigh_front_e,thigh_back_e,calf_back_e,foot_back_e];
 
-tasks4{1,1} = @()matlabFunction(jointPos_f,'file',['../',modelName,'/',modelType,'/robotGen/graph/jointPos_f'],'vars',{q});
-tasks4{1,2} = @()matlabFunction(jointPos_hb,'file',['../',modelName,'/',modelType,'/robotGen/graph/jointPos_hb'],'vars',{q});
-tasks4{1,3} = @()matlabFunction(com_hf,'file',['../',modelName,'/',modelType,'/robotGen/graph/com_hf'],'vars',{q});
-tasks4{1,4} = @()matlabFunction(com_hb,'file',['../',modelName,'/',modelType,'/robotGen/graph/com_hb'],'vars',{q});
-tasks4{1,5} = @()matlabFunction(com_e,'file',['../',modelName,'/',modelType,'/robotGen/graph/com_e'],'vars',{q});
+tasks4{1,1} = @()matlabFunction(jointPos_f,'file',['../',modelName,'/graph/jointPos_f'],'vars',{q});
+tasks4{1,2} = @()matlabFunction(jointPos_hb,'file',['../',modelName,'/graph/jointPos_hb'],'vars',{q});
+tasks4{1,3} = @()matlabFunction(com_hf,'file',['../',modelName,'/graph/com_hf'],'vars',{q});
+tasks4{1,4} = @()matlabFunction(com_hb,'file',['../',modelName,'/graph/com_hb'],'vars',{q});
+tasks4{1,5} = @()matlabFunction(com_e,'file',['../',modelName,'/graph/com_e'],'vars',{q});
 
 
 %% calculate Jacobian
@@ -253,9 +263,9 @@ tasks4{1,5} = @()matlabFunction(com_e,'file',['../',modelName,'/',modelType,'/ro
 
 
 hipPos = posMat*rotM{1,3}*[0;0;0;1];
-[J_hip,tasks5_1]=Cal_jacob(hipPos,q,numJ,modelName,modelType,'hip');
-[J_toe,tasks5_2]=Cal_jacob(toe_back,q,numJ,modelName,modelType,'toe');
-[J_heel,tasks5_3]=Cal_jacob(heel_back,q,numJ,modelName,modelType,'heel');
+[J_hip,tasks5_1]=Cal_jacob(hipPos,q,numJ,modelName,'hip');
+[J_toe,tasks5_2]=Cal_jacob(toe_back,q,numJ,modelName,'toe');
+[J_heel,tasks5_3]=Cal_jacob(heel_back,q,numJ,modelName,'heel');
 
 
 
@@ -264,11 +274,11 @@ hipPos = posMat*rotM{1,3}*[0;0;0;1];
 
 %% calculate position constraints and it's gradient
 
-tasks5_4 = PosGrad(toe_back(1,1),q,modelName,modelType,'ToePos_x');
-tasks5_5 = PosGrad(toe_back(2,1),q,modelName,modelType,'ToePos_y');
+tasks5_4 = PosGrad(toe_back(1,1),q,modelName,'ToePos_x');
+tasks5_5 = PosGrad(toe_back(2,1),q,modelName,'ToePos_y');
 
-tasks5_6 = PosGrad(heel_back(1,1),q,modelName,modelType,'HeelPos_x');
-tasks5_7 = PosGrad(heel_back(2,1),q,modelName,modelType,'HeelPos_y');
+tasks5_6 = PosGrad(heel_back(1,1),q,modelName,'HeelPos_x');
+tasks5_7 = PosGrad(heel_back(2,1),q,modelName,'HeelPos_y');
 
 tasks5 = {tasks5_1,tasks5_2,tasks5_3,tasks5_4,tasks5_5,tasks5_6,tasks5_7};
 tasks5 = cat(2,tasks5{:});
@@ -295,8 +305,8 @@ Fy_toe = k*(H-toe_back(2,1))^ks -cmax*(H-toe_back(2,1))/dmax*toe_vel_y;
 Fy_heel = k*(H-heel_back(2,1))^ks -cmax*(H-heel_back(2,1))/dmax*heel_vel_y;
 
 tasks6=cell(1,10);
-tasks6{1,1} =@()matlabFunction(Fy_toe,'file',['../',modelName,'/',modelType,'/robotGen/grf/Fy_toe'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
-tasks6{1,2} =@()matlabFunction(Fy_heel,'file',['../',modelName,'/',modelType,'/robotGen/grf/Fy_heel'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,1} =@()matlabFunction(Fy_toe,'file',['../',modelName,'/grf/Fy_toe'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,2} =@()matlabFunction(Fy_heel,'file',['../',modelName,'/grf/Fy_heel'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
 
 dFy_toe_dq = [diff(Fy_toe,q(1));
               diff(Fy_toe,q(2));
@@ -313,8 +323,8 @@ dFy_toe_ddq = [diff(Fy_toe,dq(1));
 dFy_toe_q1 = 0.5*dFy_toe_dq-dFy_toe_ddq/sampT;
 dFy_toe_q2 = 0.5*dFy_toe_dq+dFy_toe_ddq/sampT;
 
-tasks6{1,3} =@()matlabFunction(dFy_toe_q1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dFy_toe1'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
-tasks6{1,4} =@()matlabFunction(dFy_toe_q2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dFy_toe2'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,3} =@()matlabFunction(dFy_toe_q1,'file',['../',modelName,'/grf/dFy_toe1'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,4} =@()matlabFunction(dFy_toe_q2,'file',['../',modelName,'/grf/dFy_toe2'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
 
 
 dFy_heel_dq = [diff(Fy_heel,q(1));
@@ -331,8 +341,8 @@ dFy_heel_ddq = [diff(Fy_heel,dq(1));
                diff(Fy_heel,dq(6))];
 dFy_heel_q1 = 0.5*dFy_heel_dq-dFy_heel_ddq/sampT;
 dFy_heel_q2 = 0.5*dFy_heel_dq+dFy_heel_ddq/sampT;
-tasks6{1,5} =@()matlabFunction(dFy_heel_q1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dFy_heel1'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
-tasks6{1,6} =@()matlabFunction(dFy_heel_q2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dFy_heel2'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,5} =@()matlabFunction(dFy_heel_q1,'file',['../',modelName,'/grf/dFy_heel1'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
+tasks6{1,6} =@()matlabFunction(dFy_heel_q2,'file',['../',modelName,'/grf/dFy_heel2'],'vars',{q,dq,H,k,cmax,dmax,sampT}); 
 
 
 
@@ -356,16 +366,16 @@ dTau_toe_pushoff_dq1 =0.5*dTau_toe_pushoff_dq-dTau_toe_pushoff_ddq/sampT;
 dTau_toe_pushoff_dq2 = 0.5*dTau_toe_pushoff_dq+dTau_toe_pushoff_ddq/sampT;
 dTau_toe_pushoff_dfx = diff(Tau_toe_pushoff.',Fx);
 dTau_toe_pushoff_dfy = diff(Tau_toe_pushoff.',Fy);
-tasks6{1,7} =@()matlabFunction(Tau_toe_pushoff,'file',['../',modelName,'/',modelType,'/robotGen/grf/Tau_toe_pushoff'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
-tasks6{1,8} =@()matlabFunction(dTau_toe_pushoff_dq1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dTau_toe_pushoff_dq1'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
-tasks6{1,9} =@()matlabFunction(dTau_toe_pushoff_dq2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dTau_toe_pushoff_dq2'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
-tasks6{1,10} =@()matlabFunction(dTau_toe_pushoff_dfx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dTau_toe_pushoff_dfx'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT});
-tasks6{1,11} =@()matlabFunction(dTau_toe_pushoff_dfy,'file',['../',modelName,'/',modelType,'/robotGen/grf/dTau_toe_pushoff_dfy'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT});
+tasks6{1,7} =@()matlabFunction(Tau_toe_pushoff,'file',['../',modelName,'/grf/Tau_toe_pushoff'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
+tasks6{1,8} =@()matlabFunction(dTau_toe_pushoff_dq1,'file',['../',modelName,'/grf/dTau_toe_pushoff_dq1'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
+tasks6{1,9} =@()matlabFunction(dTau_toe_pushoff_dq2,'file',['../',modelName,'/grf/dTau_toe_pushoff_dq2'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT}); 
+tasks6{1,10} =@()matlabFunction(dTau_toe_pushoff_dfx,'file',['../',modelName,'/grf/dTau_toe_pushoff_dfx'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT});
+tasks6{1,11} =@()matlabFunction(dTau_toe_pushoff_dfy,'file',['../',modelName,'/grf/dTau_toe_pushoff_dfy'],'vars',{q,dq,Fx,Fy,H,k,cmax,dmax,sampT});
 
 
 
 % constraint 1 and 2: Fx<us*Fy, -Fx<us*Fy
-Grf_toe_c1 = Fx-us*Fy;
+Grf_toe_c1 = Fx-us*Fy_toe;
 Grf_toe_c2 = -Fx-us*Fy_toe;
 
 Grf_heel_c1 = Fx-us*Fy_heel;
@@ -440,35 +450,35 @@ dGrf_heel_c2_dq1 = 0.5*dGrf_heel_c2_dq-dGrf_heel_c2_ddq/sampT;
 dGrf_heel_c2_dq2 = 0.5*dGrf_heel_c2_dq+dGrf_heel_c2_ddq/sampT;
 dGrf_heel_c2_dfx = diff(Grf_heel_c2,Fx);
 
-tasks6{1,12} =@()matlabFunction(Grf_toe_c1,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_toe_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,13} =@()matlabFunction(Grf_heel_c1,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_heel_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,12} =@()matlabFunction(Grf_toe_c1,'file',['../',modelName,'/grf/Grf_toe_c1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us}); 
+tasks6{1,13} =@()matlabFunction(Grf_heel_c1,'file',['../',modelName,'/grf/Grf_heel_c1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us}); 
 
-tasks6{1,14} =@()matlabFunction(dGrf_toe_c1_dq1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dq1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,15} =@()matlabFunction(dGrf_toe_c1_dq2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dq2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,16} =@()matlabFunction(dGrf_toe_c1_dfx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dfx'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,14} =@()matlabFunction(dGrf_toe_c1_dq1,'file',['../',modelName,'/grf/dGrf_toe_c1_dq1'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,15} =@()matlabFunction(dGrf_toe_c1_dq2,'file',['../',modelName,'/grf/dGrf_toe_c1_dq2'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,16} =@()matlabFunction(dGrf_toe_c1_dfx,'file',['../',modelName,'/grf/dGrf_toe_c1_dfx'],'vars',Fx); 
 
-tasks6{1,17} =@()matlabFunction(dGrf_heel_c1_dq1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dq1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,18} =@()matlabFunction(dGrf_heel_c1_dq2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dq2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,19} =@()matlabFunction(dGrf_heel_c1_dfx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dfx'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,17} =@()matlabFunction(dGrf_heel_c1_dq1,'file',['../',modelName,'/grf/dGrf_heel_c1_dq1'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,18} =@()matlabFunction(dGrf_heel_c1_dq2,'file',['../',modelName,'/grf/dGrf_heel_c1_dq2'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,19} =@()matlabFunction(dGrf_heel_c1_dfx,'file',['../',modelName,'/grf/dGrf_heel_c1_dfx'],'vars',Fx); 
 
-tasks6{1,20} =@()matlabFunction(Grf_toe_c2,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_toe_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,21} =@()matlabFunction(Grf_heel_c2,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_heel_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,20} =@()matlabFunction(Grf_toe_c2,'file',['../',modelName,'/grf/Grf_toe_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us}); 
+tasks6{1,21} =@()matlabFunction(Grf_heel_c2,'file',['../',modelName,'/grf/Grf_heel_c2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us}); 
 
-tasks6{1,22} =@()matlabFunction(dGrf_toe_c2_dq1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dq1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,23} =@()matlabFunction(dGrf_toe_c2_dq2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dq2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,24} =@()matlabFunction(dGrf_toe_c2_dfx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c2_dfx'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,22} =@()matlabFunction(dGrf_toe_c2_dq1,'file',['../',modelName,'/grf/dGrf_toe_c2_dq1'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,23} =@()matlabFunction(dGrf_toe_c2_dq2,'file',['../',modelName,'/grf/dGrf_toe_c2_dq2'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,24} =@()matlabFunction(dGrf_toe_c2_dfx,'file',['../',modelName,'/grf/dGrf_toe_c2_dfx'],'vars',Fx); 
 
-tasks6{1,25} =@()matlabFunction(dGrf_heel_c2_dq1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dq1'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,26} =@()matlabFunction(dGrf_heel_c2_dq2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dq2'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
-tasks6{1,27} =@()matlabFunction(dGrf_heel_c2_dfx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c2_dfx'],'vars',{q,dq,Fx,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,25} =@()matlabFunction(dGrf_heel_c2_dq1,'file',['../',modelName,'/grf/dGrf_heel_c2_dq1'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,26} =@()matlabFunction(dGrf_heel_c2_dq2,'file',['../',modelName,'/grf/dGrf_heel_c2_dq2'],'vars',{q,dq,H,k,cmax,dmax,us,sampT}); 
+tasks6{1,27} =@()matlabFunction(dGrf_heel_c2_dfx,'file',['../',modelName,'/grf/dGrf_heel_c2_dfx'],'vars',Fx); 
 
 % constraint 4
 % xvel*Fx <=0  (Fx is always acting on the opposite direction of xvel)
 Grf_toe_c4 = toe_vel_x*Fx;
 Grf_heel_c4 = heel_vel_x*Fx;
 
-tasks6{1,20}=@()matlabFunction(Grf_toe_c4,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_toe_c4'],'vars',{q,dq,Fx}); 
-tasks6{1,21}=@()matlabFunction(Grf_heel_c4,'file',['../',modelName,'/',modelType,'/robotGen/grf/Grf_heel_c4'],'vars',{q,dq,Fx}); 
+tasks6{1,28}=@()matlabFunction(Grf_toe_c4,'file',['../',modelName,'/grf/Grf_toe_c4'],'vars',{q,dq,Fx}); 
+tasks6{1,29}=@()matlabFunction(Grf_heel_c4,'file',['../',modelName,'/grf/Grf_heel_c4'],'vars',{q,dq,Fx}); 
 
 dGrf_toe_c4q = [diff(Grf_toe_c4,q(1));
                 diff(Grf_toe_c4,q(2));
@@ -504,18 +514,18 @@ dGrf_heel_c4_q2 = 0.5*dGrf_heel_c4q+dGrf_heel_c4qd/sampT;
 
 
 
-tasks6{1,22}=@()matlabFunction(dGrf_toe_c4_q1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c4_q1'],'vars',{q,dq,Fx,sampT});
-tasks6{1,23}=@()matlabFunction(dGrf_toe_c4_q2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c4_q2'],'vars',{q,dq,Fx,sampT}); 
+tasks6{1,30}=@()matlabFunction(dGrf_toe_c4_q1,'file',['../',modelName,'/grf/dGrf_toe_c4_q1'],'vars',{q,dq,Fx,sampT});
+tasks6{1,31}=@()matlabFunction(dGrf_toe_c4_q2,'file',['../',modelName,'/grf/dGrf_toe_c4_q2'],'vars',{q,dq,Fx,sampT}); 
 
-tasks6{1,24}=@()matlabFunction(dGrf_heel_c4_q1,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c4_q1'],'vars',{q,dq,Fx,sampT}); 
-tasks6{1,25}=@()matlabFunction(dGrf_heel_c4_q2,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c4_q2'],'vars',{q,dq,Fx,sampT}); 
+tasks6{1,32}=@()matlabFunction(dGrf_heel_c4_q1,'file',['../',modelName,'/grf/dGrf_heel_c4_q1'],'vars',{q,dq,Fx,sampT}); 
+tasks6{1,33}=@()matlabFunction(dGrf_heel_c4_q2,'file',['../',modelName,'/grf/dGrf_heel_c4_q2'],'vars',{q,dq,Fx,sampT}); 
 
 dGrf_toe_c4_Fx = diff(Grf_toe_c4,Fx);
                  
 dGrf_heel_c4_Fx = diff(Grf_heel_c4,Fx);
               
-tasks6{1,26}=@()matlabFunction(dGrf_toe_c4_Fx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_toe_c4_F'],'vars',{q,dq}); 
-tasks6{1,27}=@()matlabFunction(dGrf_heel_c4_Fx,'file',['../',modelName,'/',modelType,'/robotGen/grf/dGrf_heel_c4_F'],'vars',{q,dq}); 
+tasks6{1,34}=@()matlabFunction(dGrf_toe_c4_Fx,'file',['../',modelName,'/grf/dGrf_toe_c4_F'],'vars',{q,dq}); 
+tasks6{1,35}=@()matlabFunction(dGrf_heel_c4_Fx,'file',['../',modelName,'/grf/dGrf_heel_c4_F'],'vars',{q,dq}); 
 
 
 
@@ -537,9 +547,9 @@ dHip_vel_xdq =[diff(hip_vel_x,dq(1));
 dHip_vel_q1 =0.5*dHip_vel_xq-dHip_vel_xdq/sampT; %in the form q2-q1
 dHip_vel_q2 =0.5*dHip_vel_xq+dHip_vel_xdq/sampT;   
 
-tasks6{1,28}=@()matlabFunction(hip_vel_x ,'file',['../',modelName,'/',modelType,'/robotGen/pos/hip_vel_x'],'vars',{q,dq,sampT}); 
-tasks6{1,29}=@()matlabFunction(dHip_vel_q1,'file',['../',modelName,'/',modelType,'/robotGen/pos/dHip_vel_q1'],'vars',{q,dq,sampT}); 
-tasks6{1,30}=@()matlabFunction(dHip_vel_q2,'file',['../',modelName,'/',modelType,'/robotGen/pos/dHip_vel_q2'],'vars',{q,dq,sampT}); 
+tasks6{1,36}=@()matlabFunction(hip_vel_x ,'file',['../',modelName,'/pos/hip_vel_x'],'vars',{q,dq,sampT}); 
+tasks6{1,37}=@()matlabFunction(dHip_vel_q1,'file',['../',modelName,'/pos/dHip_vel_q1'],'vars',{q,dq,sampT}); 
+tasks6{1,38}=@()matlabFunction(dHip_vel_q2,'file',['../',modelName,'/pos/dHip_vel_q2'],'vars',{q,dq,sampT}); 
 
 
 
@@ -547,8 +557,13 @@ tasks6{1,30}=@()matlabFunction(dHip_vel_q2,'file',['../',modelName,'/',modelType
 
 
 allTasks = {tasks,tasks2,tasks3,tasks4,tasks5,tasks6};
-allTasks = cat(2,allTasks{:});
 
+
+else
+    allTasks = {tasks,tasks2,tasks3};
+
+end
+allTasks = cat(2,allTasks{:});
 parfor i=1:length(allTasks)
     allTasks{1,i}();
 end
@@ -640,7 +655,7 @@ tasks{1,22} =@()matlabFunction(dL24_dq2,'file',['../',modelName,'/',modelType,'/
 tasks{1,23} =@()matlabFunction(dL25_dq2,'file',['../',modelName,'/',modelType,'/robotGen/dyn/',knee_config,'/dL25_dq2'],'vars',{q,dq,sampT});
 tasks{1,24} =@()matlabFunction(dL26_dq2,'file',['../',modelName,'/',modelType,'/robotGen/dyn/',knee_config,'/dL26_dq2'],'vars',{q,dq,sampT}); 
 end
-function [J,tasks]=Cal_jacob(pos,q,numJ,modelName,modelType,name)
+function [J,tasks]=Cal_jacob(pos,q,numJ,modelName,name)
 J = sym(zeros(2,numJ));
 for i=1:numJ
     for k=1:2
@@ -656,24 +671,24 @@ dJ_q5 = diff(J,q(5));
 dJ_q6 = diff(J,q(6));
 
 tasks = cell(1,7);
-tasks{1,1} =@()matlabFunction(J,'file',['../',modelName,'/',modelType,'/robotGen/dyn/J_',name],'vars',{q}); 
+tasks{1,1} =@()matlabFunction(J,'file',['../',modelName,'/pos/J_',name],'vars',{q}); 
 
-tasks{1,2} =@()matlabFunction(dJ_q1,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'1'],'vars',{q}); 
-tasks{1,3} =@()matlabFunction(dJ_q2,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'2'],'vars',{q}); 
-tasks{1,4} =@()matlabFunction(dJ_q3,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'3'],'vars',{q}); 
-tasks{1,5} =@()matlabFunction(dJ_q4,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'4'],'vars',{q}); 
-tasks{1,6} =@()matlabFunction(dJ_q5,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'5'],'vars',{q}); 
-tasks{1,7} =@()matlabFunction(dJ_q6,'file',['../',modelName,'/',modelType,'/robotGen/dyn/dJ_',name,'6'],'vars',{q}); 
+tasks{1,2} =@()matlabFunction(dJ_q1,'file',['../',modelName,'/pos/dJ_',name,'1'],'vars',{q}); 
+tasks{1,3} =@()matlabFunction(dJ_q2,'file',['../',modelName,'/pos/dJ_',name,'2'],'vars',{q}); 
+tasks{1,4} =@()matlabFunction(dJ_q3,'file',['../',modelName,'/pos/dJ_',name,'3'],'vars',{q}); 
+tasks{1,5} =@()matlabFunction(dJ_q4,'file',['../',modelName,'/pos/dJ_',name,'4'],'vars',{q}); 
+tasks{1,6} =@()matlabFunction(dJ_q5,'file',['../',modelName,'/pos/dJ_',name,'5'],'vars',{q}); 
+tasks{1,7} =@()matlabFunction(dJ_q6,'file',['../',modelName,'/pos/dJ_',name,'6'],'vars',{q}); 
 
 end
-function tasks = PosGrad(pos,q,modelName,modelType,name)
+function tasks = PosGrad(pos,q,modelName,name)
 dPos_q = [diff(pos,q(1));diff(pos,q(2));diff(pos,q(3));diff(pos,q(4));diff(pos,q(5)); diff(pos,q(6))];
 
 
 tasks = cell(1,2);
-tasks{1,1} =@()matlabFunction(pos,'file',['../',modelName,'/',modelType,'/robotGen/pos/',name],'vars',{q});
+tasks{1,1} =@()matlabFunction(pos,'file',['../',modelName,'/pos/',name],'vars',{q});
 
-tasks{1,2} =@()matlabFunction(dPos_q,'file',['../',modelName,'/',modelType,'/robotGen/pos/d',name],'vars',{q});
+tasks{1,2} =@()matlabFunction(dPos_q,'file',['../',modelName,'/pos/d',name],'vars',{q});
 
 
 

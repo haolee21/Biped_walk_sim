@@ -1,9 +1,8 @@
 %% 
 % batch simulation
-
-%models = {'human_9','human_9_load','human_9_load2','human_9_load3','human_9_exo_load','human_9_exo_load2','human_9_exo_load3'};
-models = {'human_9_exo_load'};
-%models = {'human_9_exo_load3'};
+modelName = 'human_11';
+% models = {'human_11','human_11_load1','human_11_load2','human_11_load3','human_11_exo_load1','human_11_exo_load2','human_11_exo_load3'};
+models = {'human_exo_load3'};
 hipLen = [2.0754,2.1,2.2,1.8,1.6];
 
 weights = [30,30,30,30,30,30;
@@ -14,7 +13,7 @@ weights = [30,30,30,30,30,30;
           10,30,10,10,30,10;
           10,10,30,30,10,10];
 knee_dirs=[1,0];
-      
+
       
 task_i = 1; 
 tasks = cell(1,size(models,2)*size(weights,1)*size(hipLen,2)*size(knee_dirs,2));
@@ -23,7 +22,8 @@ for i1=1:size(models,2)
     for i2=1:size(weights,1)
         for i3=1:size(hipLen,2)
             for i4=1:size(knee_dirs,2)
-                tasks{1,task_i}=@()batch_sim_single(models{1,i1},hipLen(1,i3),weights(i2,:),knee_dirs(1,i4),i3,i4,0.55);
+                tasks{1,task_i}=@()batch_sim_single(modelName,models{1,i1},hipLen(1,i3),weights(i2,:),knee_dirs(1,i4),0.55,i3);
+                
                 task_i = task_i+1;
             end
             

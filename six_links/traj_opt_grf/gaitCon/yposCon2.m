@@ -19,8 +19,8 @@ gradc_heel = zeros(p.numJ,size(x,2),size(c_heel,2));
 
 for i=1:end_i-start_i+1
     curX = x(1:p.numJ,start_i+i-1);
-    c_toe(i)=p.gndclear2-toePos_y(curX.');
-    c_heel(i)=p.gndclear2-heelPos_y(curX.');
+    c_toe(i)=p.gndclear2-ToePos_y(curX.');
+    c_heel(i)=p.gndclear2-HeelPos_y(curX.');
     gradc_toe(1:p.numJ,start_i+i-1,i) = -1*dToePos_y(curX.').';
     gradc_heel(1:p.numJ,start_i+i-1,i)=-1*dHeelPos_y(curX.').';
 end

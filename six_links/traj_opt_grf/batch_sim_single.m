@@ -1,16 +1,17 @@
-function output = batch_sim_single(model,hipLen,w,knee_dir,sim_order,knee_order,gaitT)
+function output = batch_sim_single(model,modelType,hipLen,w,knee_dir,gaitT,hipLen_idx)
 %%
 % knee_dir=1 if forward, 0 if backward
-if nargin<7
-    gaitT=0.5;
-end
+
 output.knee_dir = knee_dir;
 if knee_dir==1
     knee_dir='forward';
+    
 else
     knee_dir='backward';
+
 end
-res = opt_discrete(model,hipLen,0.95,w,0.1,gaitT,knee_dir,sim_order,knee_order);
+res = opt_discrete(model,modelType,hipLen,0.95,w,0.12,gaitT,knee_dir,hipLen_idx);
+      
 
 output.hipLen = hipLen;
 output.modelName = model;

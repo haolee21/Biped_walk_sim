@@ -1,0 +1,87 @@
+
+Job 7396545 started on:   n7441
+Job 7396545 started on:   Tue Apr 20 22:27:11 PDT 2021
+
+Currently Loaded Modulefiles:
+  1) ATS                     3) matlab/9.7
+  2) intel/18.0.4(default)
+ 
+Number of slots for this run is 1
+Number of slots that will be requested by MATLAB's batch job is 51
+ 
+Now running...
+ 
+matlab -nodisplay -nosplash -r IDRE_UMXq4MC9 -logfile RunRobotMain5.output.7396545
+ 
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+                  R2019b (9.7.0.1190202) 64-bit (glnxa64)
+                              August 21, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+ans = 
+
+  AdditionalProperties with properties:
+
+    AdditionalSubmitArgs: ''
+            EmailAddress: 'haolee@mail'
+             EnableDebug: 0
+                GpuNodes: 0
+                 GpuType: ''
+                MemUsage: '12G'
+            ProcsPerNode: 0
+               QueueName: ''
+                 UseSmpd: 0
+                WallTime: '23:00:00'
+
+
+additionalSubmitArgs =
+
+    '-pe matlab 51 -l h_rt=23:00:00 -l h_data=12G -M haolee@mail -m abes'
+
+
+job = 
+
+ Job
+
+    Properties: 
+
+                   ID: 11
+                 Type: pool
+             Username: haolee
+                State: queued
+       SubmitDateTime: 20-Apr-2021 22:27:36
+        StartDateTime: 
+     Running Duration: 0 days 0h 0m 0s
+      NumWorkersRange: [51 51]
+           NumThreads: 1
+
+      AutoAttachFiles: true
+  Auto Attached Files: /u/home/h/haolee/ModelGen/Robot/GenHuman_Exo.m
+                       /u/home/h/haolee/ModelGen/Robot/Human_Exo_main.m
+                       /u/home/h/haolee/ModelGen/Robot/RunRobotMain5.m
+        AttachedFiles: {}
+    AutoAddClientPath: true
+      AdditionalPaths: /u/home/h/haolee/ModelGen/Robot
+ EnvironmentVariables: {}
+
+    Associated Tasks: 
+
+       Number Pending: 51
+       Number Running: 0
+      Number Finished: 0
+    Task ID of Errors: []
+  Task ID of Warnings: []
+   Task Scheduler IDs: 7396551
+
+ 
+... done
+ 
+
+Job 7396545 terminated on: Tue Apr 20 22:28:07 PDT 2021
+

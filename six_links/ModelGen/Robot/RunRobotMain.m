@@ -1,1 +1,1 @@
-Human_Exo_main('human_10','human_exo_load1', 20, 1.83, 65)
+Human_Exo_main('human_11','human_exo_load1', 20,1, 1.83, 65,0)

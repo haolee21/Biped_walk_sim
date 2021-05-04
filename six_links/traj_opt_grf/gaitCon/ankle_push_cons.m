@@ -11,8 +11,8 @@ ceq_grad2 = zeros(p.numJ,size(x,2),size(ceq2,1));
 for i=1:p.phase1_idx-1 %the first frame is fixed
     q= x(1:p.numJ,i+1).'; 
     
-    ceq1(i,1)=toePos_y(q)+p.model.h_heel;
-    ceq2(i,1)=toePos_x(q)-p.toeLen/2;
+    ceq1(i,1)=ToePos_y(q)+p.model.h_heel;
+    ceq2(i,1)=ToePos_x(q)-p.toeLen/2;
     
     if(nargout>1)
         ceq_grad1(1:p.numJ,i+1,i)=dToePos_y(q).';

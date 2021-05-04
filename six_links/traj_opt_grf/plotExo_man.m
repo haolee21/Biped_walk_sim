@@ -1,4 +1,4 @@
-function plotExo_man(data,modelName,modelType,knee_dir,idx,video_name,plot_show)
+function plotExo_man(data,modelName,knee_dir,idx,video_name,plot_show)
 %% this function will plot the model walking
 % inputs: 
 %       1. data: results from opt_discrete
@@ -13,15 +13,15 @@ function plotExo_man(data,modelName,modelType,knee_dir,idx,video_name,plot_show)
 
 
 
-addpath(['../',modelName,'/',modelType,'/robotGen/grf']);
-addpath(['../',modelName,'/',modelType,'/robotGen/graph']);
-addpath(['../',modelName,'/',modelType,'/robotGen/pos']);
+addpath(['../',modelName,'/grf']);
+addpath(['../',modelName,'/graph']);
+addpath(['../',modelName,'/pos']);
 %% input argument handeling 
-if nargin<5
+if nargin<4
     idx=0;
     plot_show=1;
 end
-if nargin<6
+if nargin<5
     plot_show=1;
 end
 
@@ -96,14 +96,14 @@ for i=1:size(x,2)
     off_set = 0;
     
     if(i>p.phase2_idx)
-        if toePos_y(x(1:p.numJ,i).')<p.toe_th
+        if ToePos_y(x(1:p.numJ,i).')<p.toe_th
             Fn_toe = Fy_toe(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
         end
-        if heelPos_y(x(1:p.numJ,i).')<p.toe_th
+        if HeelPos_y(x(1:p.numJ,i).')<p.toe_th
             Fn_heel = Fy_heel(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
         end
-        if(heelPos_y(x(1:p.numJ,i).')<-p.model.h_heel)
-            off_set = -p.model.h_heel-heelPos_y(x(:,i).');
+        if(HeelPos_y(x(1:p.numJ,i).')<-p.model.h_heel)
+            off_set = -p.model.h_heel-HeelPos_y(x(:,i).');
             if(off_set_q==0)
                 off_set_q=sum(x(1:6,i));
             end

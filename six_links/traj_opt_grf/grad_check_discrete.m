@@ -31,7 +31,7 @@ p = load('param_test.mat').param;
 % p.ank_stiff=0;
 % p.us = 0.8;
 
-x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
+x2 = x1+rand(size(x1,1),size(x1,2))*0.001;
 
 %% check gradient on q
 % x2(p.varDim.q1*p.varDim.q2+1:end)=x1(p.varDim.q1*p.varDim.q2+1:end);

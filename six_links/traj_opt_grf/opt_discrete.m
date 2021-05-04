@@ -1,11 +1,8 @@
 %% Calculate the optimized trajectories for 6 link biped model with GRF
 % the dynamics constraints are discrete Lagrangian
-function result=opt_discrete(modelName,modelType,hipLen,h,jointW,ank_push,gaitT,kneeDir,sim_order,knee_order)
+function result=opt_discrete(modelName,modelType,hipLen,h,jointW,ank_push,gaitT,kneeDir,hipLen_idx) %hipLen_idx is to avoid name duplicate
 % sim_order is added to avoid duplicacy (same model but different hipLen
-if(nargin<8)
-    sim_order=0;
-    knee_order=0;
-end
+
 
 model_param = ['hipLen: ',num2str(hipLen),', h:',num2str(h), ', gaitT:',num2str(gaitT)]; 
 if nargin<7
@@ -16,10 +13,11 @@ end
 %add share functions
 addpath('initPos');
 addpath('dyn');
+addpath('gaitCon');
 addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
 addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
-addpath (['../',modelName,'/',modelType,'/robotGen/grf'])
-addpath (['../',modelName,'/',modelType,'/robotGen/pos'])
+addpath (['../',modelName,'/grf'])
+addpath (['../',modelName,'/pos'])
 %% simulate parameters
 model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
 model = model.model;
@@ -469,9 +467,10 @@ prob.bineq = [prob.bineq;bineq4];
 
 
 iterTime =8000;
+% iterTime =2;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
-    'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
+    'Display','off','GradObj','on','TolCon',1e-3,'GradConstr','on',...
     'TolX',1e-15,'UseParallel',false,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
@@ -594,13 +593,17 @@ else
 end
 
 
-
-
+%this is for avoiding both forward knee and backward knee end at the same time
+if strcmp(kneeDir,'forward')
+    knee_name =1;
+else
+    knee_name=0;
+end
 
 
 
 [t1,~]=clock;
-fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d'),num2str(name_dup)];
+fileName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)),'%02d'),num2str(name_dup),num2str(hipLen_idx),num2str(knee_name)];
     
 
 result.fileName = fileName;
@@ -625,7 +628,7 @@ save(['../',modelName,'/',modelType,'/',fileName],'result');
 
 rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
 rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
-rmpath (['../',modelName,'/',modelType,'/robotGen/grf'])
-rmpath (['../',modelName,'/',modelType,'/robotGen/pos'])
+rmpath (['../',modelName,'/grf'])
+rmpath (['../',modelName,'/pos'])
 
 end
