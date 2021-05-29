@@ -616,14 +616,37 @@ result.x0=prob.x0;
 result.set_iterTime = iterTime;
 result.model = model;
 save(['../',modelName,'/',modelType,'/',fileName],'result');
-% disp(['file name: ',modelName,'-',fileName]);
-% disp(model_param);
-% disp(param.jointW);
-% disp(['ankle push-off: ',num2str(ankle_push_ratio)]);
-% disp(['gait time: ',num2str(gaitT)]);
-% disp(kneeDir);
 
-% msgbox(['optimization done',num2str(exitflag)]);
+
+% save csv 
+dup=1;
+batchName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)*10000),'%06d'),'_',num2str(dup)];
+while isfile(['Result/',batchName,'.csv']) % check if the same filename exists
+    dup = dup+1;
+    batchName = [num2str(t1(2),'%02d'),num2str(t1(3),'%02d'),num2str(t1(4),'%02d'),num2str(t1(5),'%02d'),num2str(floor(t1(6)*10000),'%06d'),'_',num2str(dup)];
+    
+    
+end
+
+if sum(jointW == [30,30,30,30,30,30])==6
+       jointW='base';
+elseif sum(jointW==[30,30,6,6,30,30])==6
+        jointW='hip';
+elseif sum(jointW==[30,6,30,30,6,30])==6
+        jointW='knee';
+elseif sum(jointW==[6,30,30,30,30,6])==6
+        jointW='ank'; 
+elseif sum(jointW==[30,10,10,10,10,30])==6
+        jointW='hk';
+elseif sum(jointW==[10,30,10,10,30,10])==6
+        jointW='ha';
+elseif sum(jointW==[10,10,30,30,10,10])==6
+        jointW='ka';
+end
+
+fileID = fopen(['Result/',batchName,'.csv'],'w');
+fprintf(fileID,'%s,%s,%f,%f,%s,%d,%f\n',fileName,modelType,hipLen,h,jointW,dir,output.constrviolation);
+fclose(fileID);
 
 
 rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])

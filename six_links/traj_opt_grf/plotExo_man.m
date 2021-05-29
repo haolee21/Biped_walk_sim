@@ -1,5 +1,6 @@
 function plotExo_man(data,modelName,knee_dir,idx,video_name,plot_show)
 %% this function will plot the model walking
+% plotExo_man(data,modelName,knee_dir,idx,video_name,plot_show)
 % inputs: 
 %       1. data: results from opt_discrete
 %       2. model: name of the model
