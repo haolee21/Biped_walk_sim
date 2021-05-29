@@ -16,8 +16,8 @@ addpath forward_dyn
 
 addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
 addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
-addpath (['../',modelName,'/',modelType,'/robotGen/grf'])
-addpath (['../',modelName,'/',modelType,'/robotGen/pos'])
+addpath (['../',modelName,'/grf'])
+addpath (['../',modelName,'/pos'])
 
 %% simulate parameters
 model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
