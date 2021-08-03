@@ -7,5 +7,9 @@
 *.csv
 *.mlx
 *.asv
+*.cmd
+IDRE*
+*.joblog.*
+*.output.*
 six_links/Batch_sim_results
 six_links/DataAnalysis

@@ -1,6 +1,5 @@
-function plotExo_man(data,modelName,knee_dir,idx,video_name,plot_show)
+function plotExo_man(data,modelName,knee_dir,idx,filePath,video_name,plot_show)
 %% this function will plot the model walking
-% plotExo_man(data,modelName,knee_dir,idx,video_name,plot_show)
 % inputs: 
 %       1. data: results from opt_discrete
 %       2. model: name of the model
@@ -18,19 +17,19 @@ addpath(['../',modelName,'/grf']);
 addpath(['../',modelName,'/graph']);
 addpath(['../',modelName,'/pos']);
 %% input argument handeling 
-if nargin<4
+if nargin<5
     idx=0;
     plot_show=1;
 end
-if nargin<5
+if nargin<6
     plot_show=1;
 end
 
 
 if exist('video_name','var')
-    writeObject = VideoWriter(video_name);
+    writeObject = VideoWriter([filePath,'/',video_name],'Uncompressed AVI');
     writeObject.FrameRate=10;
-    writeObject.Quality=100;
+%     writeObject.Quality=100;
     open(writeObject);
 end
 
@@ -61,8 +60,8 @@ m_tot = p.model.totM;
 
 % Heuristics:
 L = 2;  % Maximum extended leg length
-xBnd = L*[-1.2,1.2];
-yBnd = [-0.5*L-1,1.5*L ];
+xBnd = [-1,1];
+yBnd = [-0.1,1.9];
 
 % Colors:
 colorGround = [118,62,12]/255;
@@ -97,12 +96,18 @@ for i=1:size(x,2)
     off_set = 0;
     
     if(i>p.phase2_idx)
-        if ToePos_y(x(1:p.numJ,i).')<p.toe_th
-            Fn_toe = Fy_toe(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
-        end
-        if HeelPos_y(x(1:p.numJ,i).')<p.toe_th
-            Fn_heel = Fy_heel(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
-        end
+        sig_toe = 1/(1+exp(500*(ToePos_y(x(1:p.numJ,i).')-p.toe_th)));
+        sig_heel = 1/(1+exp(500*(HeelPos_y(x(1:p.numJ,i).')-p.toe_th)));
+        Fn_toe = sig_toe*Fy_toe(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+        Fn_heel = sig_heel*Fy_heel(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%         if ToePos_y(x(1:p.numJ,i).')<p.toe_th
+%             Fn_toe = Fy_toe(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_toe,p.dmax,p.sampT);
+%         end
+%         if HeelPos_y(x(1:p.numJ,i).')<p.toe_th
+%             Fn_heel = Fy_heel(x(:,i).',dq(:,i).',p.toe_th,p.k,p.cmax_heel,p.dmax,p.sampT);
+%         end
+        
+        
         if(HeelPos_y(x(1:p.numJ,i).')<-p.model.h_heel)
             off_set = -p.model.h_heel-HeelPos_y(x(:,i).');
             if(off_set_q==0)
@@ -178,18 +183,24 @@ for i=1:size(x,2)
     quiver(P_e(1,6),P_e(2,6)+off_set,fext_toe(1),fext_toe(2)+off_set,'color',[0.2,1,0],'LineStyle','--','LineWidth',2);
     
     % define vertical range of the graph
-    axis([xBnd,yBnd]); axis equal; axis off;
+    
+    ylim(yBnd);
+    xlim(xBnd);
+    axis off;
     if plot_show ==1
         pause(0.002); % we only need delay if we want to show this graph
     end
-    
+    if(exist('writeObject','var'))
+        framePic = getframe(gcf);
+        writeVideo(writeObject,framePic);
+    end
 end
     
     
 if exist('writeObject','var')
     close(writeObject);
 end  
-    
+close all;   
     
 end
    

@@ -126,12 +126,11 @@ for i=1:size(x,2)-2
     
     u_sum = (u1+2*u2+u3)/4;
     
-    tau_toe_flag1 =0;
+
     tau_toe_1 = zeros(p.numJ,1);
-    tau_toe_flag2=0;
+
     tau_toe_2 = zeros(p.numJ,1);
-    tau_heel_flag1=0;
-    tau_heel_flag2=0;
+
     tau_heel_1 = zeros(p.numJ,1);
     tau_heel_2 = zeros(p.numJ,1);
     

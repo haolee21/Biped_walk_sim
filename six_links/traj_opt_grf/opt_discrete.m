@@ -615,7 +615,7 @@ result.param = param;
 result.x0=prob.x0;
 result.set_iterTime = iterTime;
 result.model = model;
-save(['../',modelName,'/',modelType,'/',fileName],'result');
+save(['../',modelName,'/',modelType,'/result/',fileName],'result');
 
 
 % save csv 
