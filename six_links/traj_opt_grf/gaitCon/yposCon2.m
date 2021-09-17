@@ -32,4 +32,6 @@ gradc = zeros(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+p.varDim.fext1_1*p
 
 gradc(1:size(gradc_q,1),:) = gradc_q;
 
+gradc = p.mat_s*gradc;
+
 end

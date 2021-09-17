@@ -14,12 +14,12 @@ end
 addpath('initPos');
 addpath('dyn');
 addpath('gaitCon');
-addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
-addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+addpath (['../',modelName,'/',modelType,'/dyn'])
+addpath (['../',modelName,'/',modelType,'/dyn/',kneeDir])
 addpath (['../',modelName,'/grf'])
 addpath (['../',modelName,'/pos'])
 %% simulate parameters
-model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
+model = load(['../',modelName,'/',modelType,'/model.mat']);
 model = model.model;
 param.model = model;
 
@@ -28,8 +28,9 @@ param.sampT = 0.01;
 time = 0:param.sampT:param.gaitT;
 ankle_push_ratio = ank_push;
 param.phase1_idx= floor(ankle_push_ratio*length(time)); % toe-off end idx
-param.phase2_idx = length(time)-floor(length(time)/2); %heel strike starts idx
+param.phase2_idx = length(time)-floor(length(time)/4); %heel strike starts idx
 
+param.max_slide = 0.01/param.sampT;
 
 % param.jointW = [30     30    30    30     30    30];
 % param.jointW = [30     30     6     6     30    30];
@@ -70,6 +71,8 @@ param.ank_stiff = 20/25*180/pi;
 param.knee_stiff1=70/100*180/pi;
 param.knee_stiff2=70/100*180/pi;
 param.hip_stiff = 30/60/180*pi;
+
+
 
 param.hip_feet_ratio = hipLen/0.7143;
 
@@ -221,7 +224,7 @@ param.varDim.fext2_2 = size(Fext2,2);
 % scale matrix, try to normalize all the states to make it more accurate
 param.q_scale = 1;% we should always maintain q_scale=1 to avoid complexicity (draw and other functions use it directly)
 param.u_scale = 10;
-param.fext_scale = 100;
+param.fext_scale = 10;
 
 
 
@@ -471,7 +474,7 @@ iterTime =8000;
 
 options = optimoptions('fmincon','Algorithm','interior-point','MaxIter',iterTime,'MaxFunEvals',iterTime*5,...
     'Display','iter','GradObj','on','TolCon',1e-3,'GradConstr','on',...
-    'TolX',1e-15,'UseParallel',false,'ScaleProblem',true);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
+    'TolX',1e-15,'UseParallel',false,'ScaleProblem',false);%,'OutputFcn',@outfun);%,'ScaleProblem',true);%,'HessianApproximation','finite-difference','SubproblemAlgorithm','cg');
 
 % options =  optimoptions('patternsearch','ConstraintTolerance',1e-5,'Display','iter','MaxFunctionEvaluations',iterTime*10,'MaxIterations',iterTime,'UseCompletePoll',true);
 
@@ -615,6 +618,9 @@ result.param = param;
 result.x0=prob.x0;
 result.set_iterTime = iterTime;
 result.model = model;
+if ~exist(['../',modelName,'/',modelType,'/result'],'dir')
+    mkdir(['../',modelName,'/',modelType,'/result'])
+end
 save(['../',modelName,'/',modelType,'/result/',fileName],'result');
 
 
@@ -649,8 +655,8 @@ fprintf(fileID,'%s,%s,%f,%f,%s,%d,%f\n',fileName,modelType,hipLen,h,jointW,dir,o
 fclose(fileID);
 
 
-rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
-rmpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+rmpath (['../',modelName,'/',modelType,'/dyn/'])
+rmpath (['../',modelName,'/',modelType,'/dyn/',kneeDir])
 rmpath (['../',modelName,'/grf'])
 rmpath (['../',modelName,'/pos'])
 

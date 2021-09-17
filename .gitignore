@@ -13,3 +13,4 @@ IDRE*
 *.output.*
 six_links/Batch_sim_results
 six_links/DataAnalysis
+*.zip

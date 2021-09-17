@@ -2,7 +2,7 @@
 % batch simulation
 
 % models = {'human_11','human_11_load1','human_11_load2','human_11_load3','human_11_exo_load1','human_11_exo_load2','human_11_exo_load3'};
-modelName = 'human_11';
+modelName = 'human_12';
 models = {'human_exo_load1'};
 hipLen = [1.8,1.9,2.0754,2.1,2.2];
 h = [0.976,0.973,0.968,0.967,0.963];

@@ -27,4 +27,6 @@ ceq_grad_q = reshape(ceq_grad_q,[p.numJ*size(ceq_grad_q,2),2*size(ceq1,1)]);
 
 ceq_grad = zeros(p.varDim.q1*p.varDim.q2+p.varDim.u1*p.varDim.u2+p.varDim.fext1_1*p.varDim.fext1_2+p.varDim.fext2_1*p.varDim.fext2_2,2*size(ceq1,1));
 ceq_grad(1:size(ceq_grad_q,1),:) = ceq_grad_q;
+
+ceq_grad = p.mat_s*ceq_grad;
 end

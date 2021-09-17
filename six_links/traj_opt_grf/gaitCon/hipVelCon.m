@@ -26,5 +26,5 @@ gradceq_q(:,1) = dHip_vel_q2(q1.',dq1.',p.sampT);
 gradceq_q(:,end) = -dHip_vel_q1(qend.',dqend.',p.sampT);
 gradceq = [reshape(gradceq_q,[p.varDim.q1*p.varDim.q2,1]);zeros(p.varDim.u1*p.varDim.u2+p.varDim.fext1_1*p.varDim.fext1_2+p.varDim.fext2_1*p.varDim.fext2_2,1)];
     
-
+gradceq = p.mat_s*gradceq;
 end

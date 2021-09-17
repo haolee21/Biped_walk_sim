@@ -1,1 +1,0 @@
-Human_Exo_main('human_12','human_load1', 20,0, 1.83, 65,0,1)

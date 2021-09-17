@@ -59,14 +59,13 @@ x = [q;u;x];
 [ceq2,gradceq2]=hipVelCon(x,p);
 
 
-c = [c1;c2;10*c3];
-gradc=[gradc1,gradc2,10*gradc3];
-ceq=[ceq1;10*ceq5;ceq2];
+c = [10*c1;c2;c3];
+gradc=[10*gradc1,gradc2,gradc3];
+ceq=[ceq1;ceq5;ceq2];
 
-gradceq=[gradceq1,10*gradceq5,gradceq2];
+gradceq=[gradceq1,gradceq5,gradceq2];
 
-gradc = p.mat_s*gradc;
-gradceq=p.mat_s*gradceq;
+
 
 
 end

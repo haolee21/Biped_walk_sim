@@ -518,7 +518,7 @@ gradceq_fext1 = reshape(gradceq_fext1,[p.varDim.fext1_1*p.varDim.fext1_2,size(ce
 gradceq_fext2 = reshape(gradceq_fext2,[p.varDim.fext2_1*p.varDim.fext2_2,size(ceq,1)]);
 
 
-gradceq = [gradceq_q;gradceq_u;gradceq_fext1;gradceq_fext2];
+gradceq = p.mat_s*[gradceq_q;gradceq_u;gradceq_fext1;gradceq_fext2];
 % ceq=gather(ceq);
 % gradceq=gather(gradceq);
 end

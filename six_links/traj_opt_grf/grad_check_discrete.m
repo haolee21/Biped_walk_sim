@@ -3,7 +3,7 @@
 clear;
 clc;
 
-modelName='human_11';
+modelName='human_12';
 modelType = 'human_exo_load1';
 kneeDir='forward';
 
@@ -14,24 +14,24 @@ addpath gaitCon/
 addpath plotRobot/
 addpath forward_dyn
 
-addpath (['../',modelName,'/',modelType,'/robotGen/dyn/'])
-addpath (['../',modelName,'/',modelType,'/robotGen/dyn/',kneeDir])
+addpath (['../',modelName,'/',modelType,'/dyn/'])
+addpath (['../',modelName,'/',modelType,'/dyn/',kneeDir])
 addpath (['../',modelName,'/grf'])
 addpath (['../',modelName,'/pos'])
 
 %% simulate parameters
-model = load(['../',modelName,'/',modelType,'/robotGen/model.mat']);
+model = load(['../',modelName,'/',modelType,'/model.mat']);
 
 
 
 x1 = load('xopt').xopt;
 p = load('param_test.mat').param;
-
+p.max_slide = 0.01/p.sampT;
 % p.knee_stiff =0; % I use max moment (MVC/angle), since the stiffness of the paper is too high
 % p.ank_stiff=0;
 % p.us = 0.8;
 
-x2 = x1+rand(size(x1,1),size(x1,2))*0.001;
+x2 = x1+rand(size(x1,1),size(x1,2))*0.0001;
 
 %% check gradient on q
 % x2(p.varDim.q1*p.varDim.q2+1:end)=x1(p.varDim.q1*p.varDim.q2+1:end);
